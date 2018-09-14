@@ -1,0 +1,9 @@
+﻿@{
+    var controller = ViewContext.RouteData.Values["Controller"];
+    var action = ViewContext.RouteData.Values["Action"];
+}
+
+<ol class="breadcrumb">
+    <li><a href="/"><i class="fa fa-dashboard"></i> @controller</a></li>
+    <li class="active">@action</li>
+</ol>

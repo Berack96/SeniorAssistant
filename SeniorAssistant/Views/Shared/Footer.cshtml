@@ -1,0 +1,14 @@
+﻿@using System.Reflection
+@{
+    var assembly = Assembly.GetEntryAssembly();
+}
+
+<footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+        @(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion)
+    </div>
+    <!-- Default to the left -->
+    
+    <strong>@(assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright) <a href="#">@(assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company)</a>.</strong>
+</footer>

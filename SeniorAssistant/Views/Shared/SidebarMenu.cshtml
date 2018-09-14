@@ -1,0 +1,33 @@
+﻿@inject IEnumerable<IMenuItem> Menu
+
+<ul class="sidebar-menu" data-widget="tree">
+    @foreach(var menuItem in Menu)
+    {
+        switch(menuItem)
+        {
+            case MenuItem single:
+                <li>
+                    <a href="@single.HRef">@single.Text</a>
+                </li>
+                break;
+            case SubMenu multi:
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-link"></i><span>@multi.Text</span>
+                        <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        @foreach (MenuItem item in multi.Items)
+                        {
+                            <li>
+                                <a href="@item.HRef">@item.Text</a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+                break;
+        }
+    }
+</ul>
