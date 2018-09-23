@@ -2,6 +2,7 @@
 
 namespace SeniorAssistant.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
         [Route("")]
@@ -16,6 +17,24 @@ namespace SeniorAssistant.Controllers
         public IActionResult Heartbeat()
         {
             return View();
+        }
+
+        [Route("Sleep")]
+        public IActionResult Sleep()
+        {
+            return View();
+        }
+
+        [Route("Step")]
+        public IActionResult Step()
+        {
+            return View();
+        }
+
+        [Route("{User}")]
+        public IActionResult SingleUser(string user)
+        {
+            return View("user", user);
         }
     }
 }

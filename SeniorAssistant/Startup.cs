@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using LinqToDB;
 using LinqToDB.DataProvider.SQLite;
 using Microsoft.AspNetCore.Builder;
@@ -11,8 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeniorAssistant.Configuration;
 using SeniorAssistant.Data;
-using SeniorAssistant.Extensions;
 using SeniorAssistant.Models;
+using SeniorAssistant.Extensions;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace SeniorAssistant
 {
@@ -31,6 +31,23 @@ namespace SeniorAssistant
         {
             services.AddMvc();
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info
+                {
+                    Version = "v1",
+                    Title = "Senior REST APIs",
+                    Description = "REST APIs for old people",
+                    TermsOfService = "None"
+                });
+
+                // Se decommento ottengo un'eccezione quando ho un controller (es. CategoriesController) che estende un altro controller.
+                // Set the comments path for the Swagger JSON and UI.
+                //var basePath = AppContext.BaseDirectory;
+                //var xmlPath = Path.Combine(basePath, "REST.xml");
+                //c.IncludeXmlComments(xmlPath);
+            });
+
             services.Configure<Kendo>(Configuration.GetSection("kendo"));
             services.Configure<Theme>(Configuration.GetSection("theme"));
 
@@ -43,8 +60,8 @@ namespace SeniorAssistant
                     {
                         new MenuItem("User", "/"),
                         new MenuItem("Heartbeat", "/heartbeat"),
-                        new MenuItem("Sleep"),
-                        new MenuItem("Step")
+                        new MenuItem("Sleep", "/sleep"),
+                        new MenuItem("Step", "/step")
                     }
                 },
             });
@@ -68,6 +85,15 @@ namespace SeniorAssistant
             
             app.UseStaticFiles();
 
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/api/v1.json", "V1");
+            });
+
             /*
              Shortcut per:
 
@@ -88,38 +114,65 @@ namespace SeniorAssistant
         {
             using (var db = dataContext.Create())
             {
+                const string baseUsername = "vecchio";
+                string[] users = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
+                    
+                db.CreateTableIfNotExists<Heartbeat>();
+                db.CreateTableIfNotExists<Sleep>();
+                db.CreateTableIfNotExists<Step>();
                 try
                 {
                     db.CreateTable<User>();
-                    db.CreateTable<Heartbeat>();
-
-                    const string baseUsername = "vecchio";
-
-                    string[] users = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
-                    int num = 0;
+                    int count = 0;
                     foreach (string user in users)
                     {
-                        db.InsertOrReplace(new User { Name = user, Username = baseUsername+(num==0?"":""+num) });
-                        num++;
-                    }
-
-                    Random rnd = new Random();
-                    for (int i=0; i<50; i++)
-                    {
-                        int random = rnd.Next(num);
-                        string user = baseUsername + (random==0? "":""+random);
-                        DateTime time = DateTime.Now.AddHours(rnd.Next(-24, +24));
-                        int beat = rnd.Next(50, 90);
-
-                        Heartbeat heart = new Heartbeat { Username = user, Time = time, Value = beat };
-                        db.Insert(heart);
+                        db.InsertOrReplace(new User { Name = user, Username = baseUsername + (count == 0 ? "" : "" + count) });
+                        count++;
                     }
                 }
-                catch (SqliteException)
+                catch
+                { }
+
+                Random rnd = new Random();
+                DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+                now = now.AddHours(DateTime.Now.Hour).AddMinutes(30);
+                double totalHours = 50;
+                try
                 {
-                    // Do nothing
+                    DateTime time = db.GetTable<Heartbeat>().MaxAsync(x => x.Time).Result;
+                    TimeSpan span = now.Subtract(time);
+                    totalHours = span.TotalHours;
                 }
+                catch { }
 
+                
+                for (int i = 0; i<totalHours; i++)
+                {
+                    DateTime time = now.AddHours(-i);
+                    for (int num = 0; num < users.Length; num++)
+                    {
+                        string user = baseUsername + num;
+
+                        if (time.Day != now.Day)
+                        {
+                            Sleep sleep = new Sleep() { Username = user, Time = time, Value = rnd.Next(6 * 3600000, 9 * 3600000) };
+                            db.Insert(sleep);
+                        }
+
+                        if (rnd.Next(5) < 4)
+                        {
+                            Heartbeat heart = new Heartbeat() { Username = user, Time = time, Value = rnd.Next(50, 120) };
+                            Step step = new Step() { Username = user, Time = time, Value = rnd.Next(100, 500) };
+
+                            db.Insert(heart);
+                            db.Insert(step);
+                        }
+                    }
+                    if (time.Day != now.Day)
+                    {
+                        now = now.AddDays(-1);
+                    }
+                }
             }
         }
     }

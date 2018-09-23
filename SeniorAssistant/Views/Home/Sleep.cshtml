@@ -6,7 +6,7 @@
 
 <script>
     $(document).ready(function () {
-        var baseUrl = "@Url.Content("~/api/heartbeat/")";
+        var baseUrl = "@Url.Content("~/api/sleep/")";
 
         $("#grid").kendoGrid({
             dataSource: {
@@ -20,9 +20,9 @@
                     model: {
                         id: "username",
                         fields: {
-                            username: { type: "string" },
+                            username: { type: "string",  },
                             time: { type: "date" },
-                            value: {type: "number" }
+                            value: { type: "number" }
                         }
                     }
                 }
@@ -34,7 +34,7 @@
             columns: [
                 { field: "username", title: "Username" },
                 { field: "time", title: "Date/Time", format: "{0:dd/MM/yyyy HH:mm}" },
-                { field: "value", title: "Heartbeats" }
+                { field: "value", title: "Sleep Time", format: "{n2}", template: '${value/3600000}' }
             ]
         });
     })

@@ -2,9 +2,13 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
+    "iis": {
+      "applicationUrl": "http://localhost/SeniorAssistant",
+      "sslPort": 0
+    },
     "iisExpress": {
       "applicationUrl": "http://localhost:50361",
-      "sslPort": 44348
+      "sslPort": 44387
     }
   },
   "profiles": {
@@ -27,6 +31,9 @@
       "commandName": "Docker",
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}"
+    },
+    "Snapshot Debugger (servizio app di Azure)": {
+      "commandName": "Snapshot Debugger (servizio app di Azure)"
     }
   }
 }

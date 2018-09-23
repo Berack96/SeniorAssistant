@@ -1,0 +1,82 @@
+﻿@model string
+@{
+    ViewBag.Title = "Hello Razor";
+}
+
+<div id="chart"></div>
+
+<script>
+    var base_url = "@Url.Content("~/api/")";
+
+    $("#chart").kendoChart({
+        title: { text: "Visualizzazione attivita' di @Model" },
+        legend: { position: "bottom" },
+        dataSource: {
+            transport: {
+                read: {
+                    url: base_url+"heartbeat/@Model/last/48",
+                    type: "GET",
+                    dataType: "json"
+                }
+            },
+            sort: {
+                field: "time",
+                dir: "asc"
+            }
+        },
+        seriesDefaults: {
+            type: "line",
+            style: "smooth"
+        },
+        series: [{
+            name: "Battito",
+            field: "value",
+            categoryField: "time",
+            format: "0:{dd HH:mm}"
+        }],
+        /*series: [{
+            type: "column",
+            field: "value",
+            categoryField: "time"
+        }, {
+            name: "Steps",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "/api/steps/",
+                        dataType: "json"
+                    }
+                },
+                sort: {
+                    field: "time",
+                    dir: "asc"
+                }
+            }
+        }],
+        /*
+        valueAxis: {
+            labels: {
+                format: "{0}%"
+            },
+            line: {
+                visible: false
+            },
+            axisCrossingValue: -10
+        },
+        categoryAxis: {
+            categories: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011],
+            majorGridLines: {
+                visible: false
+            },
+            labels: {
+                rotation: "auto"
+            }
+        },
+        tooltip: {
+            visible: true,
+            format: "{0}%",
+            template: "#= series.name #: #= value #"
+        }*/
+    });
+
+</script>
