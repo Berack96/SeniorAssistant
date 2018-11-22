@@ -136,43 +136,36 @@ namespace SeniorAssistant
                 Random rnd = new Random();
                 DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
                 now = now.AddHours(DateTime.Now.Hour).AddMinutes(30);
-                double totalHours = 50;
                 try
                 {
-                    DateTime time = db.GetTable<Heartbeat>().MaxAsync(x => x.Time).Result;
-                    TimeSpan span = now.Subtract(time);
-                    totalHours = span.TotalHours;
-                }
-                catch { }
-
+                    double totalHours = 50;
+                    try {
+                        DateTime maxTimeInDB = db.GetTable<Heartbeat>().MaxAsync(x => x.Time).Result;
+                        TimeSpan span = now.Subtract(maxTimeInDB);
+                        totalHours = span.TotalHours;
+                    } catch { }
                 
-                for (int i = 0; i<totalHours; i++)
-                {
-                    DateTime time = now.AddHours(-i);
-                    for (int num = 0; num < users.Length; num++)
+                    for (int i = 0; i<totalHours; i++)
                     {
-                        string user = baseUsername + num;
+                        DateTime time = now.AddHours(-i);
+                        for (int num = 0; num < users.Length; num++)
+                        {
+                            string user = baseUsername + num;
 
+                            if (time.Day != now.Day)
+                            {
+                                db.Insert(new Sleep() { Username = user, Time = time, Value = rnd.Next(5 * 3600000, 9 * 3600000) });
+                            }
+                            db.Insert(new Heartbeat() { Username = user, Time = time, Value = rnd.Next(50, 120) });
+                            db.Insert(new Step() { Username = user, Time = time, Value = rnd.Next(100, 500) });
+                        }
                         if (time.Day != now.Day)
                         {
-                            Sleep sleep = new Sleep() { Username = user, Time = time, Value = rnd.Next(6 * 3600000, 9 * 3600000) };
-                            db.Insert(sleep);
+                            now = now.AddDays(-1);
                         }
-
-                        if (rnd.Next(5) < 4)
-                        {
-                            Heartbeat heart = new Heartbeat() { Username = user, Time = time, Value = rnd.Next(50, 120) };
-                            Step step = new Step() { Username = user, Time = time, Value = rnd.Next(100, 500) };
-
-                            db.Insert(heart);
-                            db.Insert(step);
-                        }
-                    }
-                    if (time.Day != now.Day)
-                    {
-                        now = now.AddDays(-1);
                     }
                 }
+                catch { }
             }
         }
     }

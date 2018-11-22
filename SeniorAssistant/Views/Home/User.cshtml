@@ -7,76 +7,87 @@
 
 <script>
     var base_url = "@Url.Content("~/api/")";
+    var end_url = "/@Model/last/48";
 
-    $("#chart").kendoChart({
-        title: { text: "Visualizzazione attivita' di @Model" },
-        legend: { position: "bottom" },
-        dataSource: {
-            transport: {
-                read: {
-                    url: base_url+"heartbeat/@Model/last/48",
-                    type: "GET",
-                    dataType: "json"
-                }
-            },
-            sort: {
-                field: "time",
-                dir: "asc"
-            }
-        },
-        seriesDefaults: {
-            type: "line",
-            style: "smooth"
-        },
-        series: [{
-            name: "Battito",
-            field: "value",
-            categoryField: "time",
-            format: "0:{dd HH:mm}"
-        }],
-        /*series: [{
-            type: "column",
-            field: "value",
-            categoryField: "time"
-        }, {
-            name: "Steps",
-            dataSource: {
-                transport: {
-                    read: {
-                        url: "/api/steps/",
-                        dataType: "json"
+    $.getJSON(base_url + "heartbeat" + end_url, function (heartbeat) {
+        $.getJSON(base_url + "step" + end_url, function (steps) {
+            $.getJSON(base_url + "sleep" + end_url, function (sleep) {
+
+                var sleepArr = [];
+                sleep.forEach( function (el) {
+                    sleepArr.push({ "time": el.time, "value": 1 });
+                    var base_time = new Date(el.time).getTime();
+
+                    for (var i = 60000; i <= el.value; i += 60000) {
+                        sleepArr.push({ "time": new Date(base_time + i), "value": 1 });
                     }
-                },
-                sort: {
-                    field: "time",
-                    dir: "asc"
-                }
-            }
-        }],
-        /*
-        valueAxis: {
-            labels: {
-                format: "{0}%"
-            },
-            line: {
-                visible: false
-            },
-            axisCrossingValue: -10
-        },
-        categoryAxis: {
-            categories: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011],
-            majorGridLines: {
-                visible: false
-            },
-            labels: {
-                rotation: "auto"
-            }
-        },
-        tooltip: {
-            visible: true,
-            format: "{0}%",
-            template: "#= series.name #: #= value #"
-        }*/
-    });
+                });
 
+                $("#chart").kendoChart({
+                    title: { text: "Visualizzazione attivita' di @Model" },
+                    legend: { position: "bottom" },
+                    seriesDefaults: {
+                        type: "line",
+                        style: "smooth"
+                    },
+                    series: [{
+                        name: "Battito",
+                        field: "value",
+                        color: "red",
+                        axis: "Heartbeat",
+                        categoryField: "time",
+                        data: heartbeat,
+                        tooltip: {
+                            visible: true,
+                            format: "{0}%",
+                            template: "Media di: #= value # bpm"
+                        }
+                    }, {
+                        name: "Passi",
+                        field: "value",
+                        color: "blue",
+                        axis: "Steps",
+                        categoryField: "time",
+                        data: steps,
+                        tooltip: {
+                            visible: true,
+                            format: "{0}%",
+                            template: "#= series.name #: #= value #"
+                        }
+                    }, {
+                        type: "area",
+                        name: "Sonno",
+                        field: "value",
+                        color: "black",
+                        axis: "Sleep",
+                        categoryField: "time",
+                        data: sleepArr
+                    }],
+                    categoryAxis: {
+                        labels: {
+                            rotation: +45,
+                            dateFormats: {
+                                hours: "HH:mm"
+                            }
+                        },
+                        type: "Date",
+                        baseUnit: "hours"
+                    },
+                    valueAxes: [{
+                        name: "Heartbeat",
+                        color: "red"
+                    }, {
+                        name: "Steps",
+                        color: "blue"
+                    }, {
+                        name: "Sleep",
+                        color: "gray",
+                        visible: false,
+                        max: 1,
+                        min: 0
+                    }]
+                })
+            })
+        })
+    });
 </script>
