@@ -1,4 +1,10 @@
-﻿<div class="navbar-custom-menu">
+﻿@inject IHttpContextAccessor HttpContextAccessor
+
+@{ 
+    string session = HttpContextAccessor.HttpContext.Session.GetString("username");
+}
+
+<div class="navbar-custom-menu">
     <ul class="nav navbar-nav">
         <!-- Messages: style can be found in dropdown.less-->
         <li class="dropdown messages-menu">
@@ -99,16 +105,20 @@
             </ul>
         </li>
         <!-- User Account Menu -->
-        <li class="dropdown user user-menu">
+        <li id="user-menu" class="dropdown user user-menu">
             <!-- Menu Toggle Button -->
+
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 <!-- The user image in the navbar-->
                 <img src="~/AdminLTE-2.4.3/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
                 <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                <span class="hidden-xs">Alexander Pierce</span>
+                <span id="user-name" class="hidden-xs">@session</span>
             </a>
             <ul class="dropdown-menu">
                 <!-- The user image in the menu -->
+                <li class="user-body">
+                    @{ await Html.RenderPartialAsync(session == null?"Login":"Logout"); }
+                </li>
                 <li class="user-header">
                     <img src="~/AdminLTE-2.4.3/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
                     <p>

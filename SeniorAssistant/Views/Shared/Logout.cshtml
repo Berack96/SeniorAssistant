@@ -1,0 +1,19 @@
+﻿<div class="">
+    <button class="btn-default btn btn-flat" id="logout-btn">Logout</button>
+</div>
+
+<script>
+    $("#logout-btn").on("click", function () {
+        $.ajax({
+            url: "/Account/_logout",
+            dataType: "json",
+            type: "POST",
+            success: function () {
+                window.location.reload();
+            },
+            error: function (xhr, status, error) {
+                alert(xhr.responseText)
+            }
+        })
+    });
+</script>

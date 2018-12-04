@@ -1,4 +1,5 @@
 ﻿using LinqToDB.Mapping;
+using Microsoft.AspNetCore.Identity;
 
 namespace SeniorAssistant.Models
 {

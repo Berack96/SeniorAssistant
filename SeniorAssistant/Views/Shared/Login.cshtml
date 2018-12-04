@@ -1,0 +1,34 @@
+﻿<div class="">
+    <input type="text" id="username" placeholder="username" />
+    <input type="password" id="password" placeholder="password" />
+    <button class="btn-default btn btn-flat" id="login-btn">Login</button>
+    <p id="msg" class="login-box-msg"></p>
+</div>
+
+<script>
+    $("#login-btn").on("click", function () {
+        var userName = $("#username").val();
+        var password = $("#password").val();
+        $.ajax({
+            url: "/Account/_login",
+            data: { UserName: userName, Password: password, RememberMe: false },
+            dataType: "json",
+            type: "POST",
+            success: function (data) {
+                console.log(data);
+                var msg = $("#msg");
+                if (data.success) {
+                    msg.hide();
+                    // app.navigate("");
+                    window.location.reload();
+                } else {
+                    msg.html(data.message).show();
+                    $("#user-menu").addClass("open");
+                }
+            },
+            error: function (xhr, status, error) {
+                alert(xhr.responseText)
+            }
+        })
+    });
+</script>

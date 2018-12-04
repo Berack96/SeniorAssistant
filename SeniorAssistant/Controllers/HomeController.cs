@@ -1,10 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SeniorAssistant.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
+        private readonly ISession session;
+        public HomeController(IHttpContextAccessor httpContextAccessor)
+        {
+            this.session = httpContextAccessor.HttpContext.Session;
+        }
+
         [Route("")]
         [Route("Home")]
         [Route("Index")]
@@ -31,7 +38,7 @@ namespace SeniorAssistant.Controllers
             return View();
         }
 
-        [Route("{User}")]
+        [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
             return View("user", user);

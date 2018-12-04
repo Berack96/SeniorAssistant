@@ -13,6 +13,8 @@ using SeniorAssistant.Data;
 using SeniorAssistant.Models;
 using SeniorAssistant.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace SeniorAssistant
 {
@@ -30,6 +32,7 @@ namespace SeniorAssistant
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSession();
 
             services.AddSwaggerGen(c =>
             {
@@ -51,6 +54,7 @@ namespace SeniorAssistant
             services.Configure<Kendo>(Configuration.GetSection("kendo"));
             services.Configure<Theme>(Configuration.GetSection("theme"));
 
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IEnumerable<IMenuItem>>(new IMenuItem[]
             {
                 new SubMenu
@@ -81,8 +85,10 @@ namespace SeniorAssistant
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
             }
-            
+
+            app.UseSession();
             app.UseStaticFiles();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
