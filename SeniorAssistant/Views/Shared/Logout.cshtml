@@ -1,6 +1,44 @@
-﻿<div class="">
-    <button class="btn-default btn btn-flat" id="logout-btn">Logout</button>
-</div>
+﻿@model string
+<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+    <!-- The user image in the navbar-->
+    <img src="~/AdminLTE-2.4.3/dist/img/user2-160x160.jpg" class="user-image" alt="User Image">
+    <!-- hidden-xs hides the username on small devices so only the image appears. -->
+    <span id="user-name" class="hidden-xs">@Model</span>
+</a>
+<ul class="dropdown-menu">
+    <!-- The user image in the menu -->
+    <li class="user-header">
+        <img src="~/AdminLTE-2.4.3/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+        <p>
+            Alexander Pierce - Web Developer
+            <small>Member since Nov. 2012</small>
+        </p>
+    </li>
+    <!-- Menu Body -->
+    <li class="user-body">
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <a href="#">Followers</a>
+            </div>
+            <div class="col-xs-4 text-center">
+                <a href="#">Sales</a>
+            </div>
+            <div class="col-xs-4 text-center">
+                <a href="#">Friends</a>
+            </div>
+        </div>
+        <!-- /.row -->
+    </li>
+    <!-- Menu Footer-->
+    <li class="user-footer">
+        <div class="pull-left">
+            <a href="#" class="btn btn-default btn-flat">Profile</a>
+        </div>
+        <div class="pull-right">
+            <a href="#" id="logout-btn" class="btn btn-default btn-flat">Logout</a>
+        </div>
+    </li>
+</ul>
 
 <script>
     $("#logout-btn").on("click", function () {
@@ -9,7 +47,7 @@
             dataType: "json",
             type: "POST",
             success: function () {
-                window.location.reload();
+                window.location.href = "/";
             },
             error: function (xhr, status, error) {
                 alert(xhr.responseText)

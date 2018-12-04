@@ -1,0 +1,53 @@
+﻿@model IEnumerable<User>
+@{
+    ViewBag.Title = "Hello Razor";
+}
+
+<div id="grid"></div>
+
+<script>
+    $(document).ready(function () {
+        var baseUrl = "@Url.Content("~/api/user/")";
+
+        $("#grid").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: { url: baseUrl, type: "GET" }
+
+                    /*
+                    parameterMap: function (model, operation) {
+                        if (operation !== "read" && model) {
+                            return kendo.stringify(model);
+                        }
+                    }
+                    */
+                },
+                serverPaging: false,
+                serverSorting: false,
+                batch: false,
+                schema: {
+                    model: {
+                        id: "username",
+                        fields: {
+                            username: { type: "string" },
+                            name: { type: "string" }
+                        }
+                    }
+                }
+            },
+            scrollable: true,
+            sortable: true,
+            filterable: true,
+            editable: false,
+            columns: [
+                { field: "username", title: "Username" },
+                { field: "name", title: "Name" },
+                { field: "url", title: "",template:'<a href=/user/#=username#>Vedi Dati</a>'}/*,
+                { field: "time", title: "Date/Time", format: "{dd/MM/yyyy HH}" },
+                { field: "value", title: "Heartbeats" }
+                */
+            ]
+        });
+    })
+
+</script>

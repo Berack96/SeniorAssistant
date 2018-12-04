@@ -38,10 +38,16 @@ namespace SeniorAssistant.Controllers
             return View();
         }
 
+        [Route("Users")]
+        public IActionResult Users()
+        {
+            return View();
+        }
+
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
-            return View("user", user);
+            return View("data", user);
         }
     }
 }
