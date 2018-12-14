@@ -7,7 +7,6 @@ namespace SeniorAssistant.Models
     {
         [PrimaryKey]
         [NotNull]
-        [Association(ThisKey = nameof(Username), OtherKey = nameof(User.Username), CanBeNull = false)]
         public string Username { get; set; }
 
         [PrimaryKey]

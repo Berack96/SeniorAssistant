@@ -121,7 +121,7 @@ namespace SeniorAssistant
             using (var db = dataContext.Create())
             {
                 const string baseUsername = "vecchio";
-                string[] users = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
+                string[] names = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
                     
                 db.CreateTableIfNotExists<Heartbeat>();
                 db.CreateTableIfNotExists<Sleep>();
@@ -130,7 +130,7 @@ namespace SeniorAssistant
                 {
                     db.CreateTable<User>();
                     int count = 0;
-                    foreach (string user in users)
+                    foreach (string user in names)
                     {
                         var username = baseUsername + count;
                         db.InsertOrReplace(new User { Name = user, Username = username, Password = username, Email = username + "@email.st" } );
@@ -145,7 +145,7 @@ namespace SeniorAssistant
                 now = now.AddHours(DateTime.Now.Hour).AddMinutes(30);
                 try
                 {
-                    double totalHours = 50;
+                    double totalHours = 48;
                     try {
                         DateTime maxTimeInDB = db.GetTable<Heartbeat>().MaxAsync(x => x.Time).Result;
                         TimeSpan span = now.Subtract(maxTimeInDB);
@@ -155,20 +155,16 @@ namespace SeniorAssistant
                     for (int i = 0; i<totalHours; i++)
                     {
                         DateTime time = now.AddHours(-i);
-                        for (int num = 0; num < users.Length; num++)
+                        for (int num = 0; num < names.Length; num++)
                         {
                             string user = baseUsername + num;
 
-                            if (time.Day != now.Day)
+                            if (time.Day != now.Day && time.Hour == 21)
                             {
                                 db.Insert(new Sleep() { Username = user, Time = time, Value = rnd.Next(5 * 3600000, 9 * 3600000) });
                             }
                             db.Insert(new Heartbeat() { Username = user, Time = time, Value = rnd.Next(50, 120) });
                             db.Insert(new Step() { Username = user, Time = time, Value = rnd.Next(100, 500) });
-                        }
-                        if (time.Day != now.Day)
-                        {
-                            now = now.AddDays(-1);
                         }
                     }
                 }

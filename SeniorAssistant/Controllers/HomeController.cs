@@ -47,6 +47,8 @@ namespace SeniorAssistant.Controllers
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
+            if(session.GetString("username") == null)
+                return RedirectToAction("Index");
             return View("data", user);
         }
     }

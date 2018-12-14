@@ -45,9 +45,11 @@ namespace IdentityDemo.Controllers
         [HttpPost]
         public ActionResult _login(string username, string password)
         {
-            JsonResponse response = new JsonResponse();
-            response.Success = false;
-            response.Message = "Username or password is invalid.";
+            JsonResponse response = new JsonResponse
+            {
+                Success = false,
+                Message = "Username or password is invalid."
+            };
 
             var strunz = Db.GetTable<User>().Where(user => user.Username.Equals(username) && user.Password.Equals(password)).ToListAsync().Result;
 
