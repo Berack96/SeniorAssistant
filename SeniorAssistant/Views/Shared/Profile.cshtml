@@ -1,0 +1,16 @@
+﻿@model User
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var session = HttpContextAccessor.HttpContext.Session;
+}
+
+<div class="content">
+    <h2 class="alert-success" style="text-align:center">
+        Welcome @session.GetString("username")
+
+    </h2>
+    name: @session.GetString("name")<br />
+    lastname: @session.GetString("lastname")<br />
+    email: @session.GetString("email")
+</div>

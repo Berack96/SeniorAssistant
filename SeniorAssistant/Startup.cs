@@ -132,7 +132,8 @@ namespace SeniorAssistant
                     int count = 0;
                     foreach (string user in users)
                     {
-                        db.InsertOrReplace(new User { Name = user, Username = baseUsername + (count == 0 ? "" : "" + count) });
+                        var username = baseUsername + count;
+                        db.InsertOrReplace(new User { Name = user, Username = username, Password = username, Email = username + "@email.st" } );
                         count++;
                     }
                 }

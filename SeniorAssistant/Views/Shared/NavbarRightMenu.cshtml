@@ -107,7 +107,10 @@
         <!-- User Account Menu -->
         <li id="user-menu" class="dropdown user user-menu">
             <!-- Menu Toggle Button -->
-            @{ await Html.RenderPartialAsync(session == null ? "Login" : "Logout", session); }
+            @if(session != null)
+            {
+                await Html.RenderPartialAsync("Logout", session);
+            }
 
         </li>
         <!-- Control Sidebar Toggle Button -->

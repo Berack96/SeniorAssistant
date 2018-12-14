@@ -7,14 +7,12 @@ namespace SeniorAssistant.Models
     {
         [PrimaryKey]
         [NotNull]
+        [Association(ThisKey = nameof(Username), OtherKey = nameof(User.Username), CanBeNull = false)]
         public string Username { get; set; }
 
         [PrimaryKey]
         [NotNull]
         public DateTime Time { get; set; }
-        
-        [Association(ThisKey = nameof(Username), OtherKey = nameof(User.Username), CanBeNull = false)]
-        public User user { get; set; }
 
         public long Value { get; set; }
     }

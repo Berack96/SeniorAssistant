@@ -1,14 +1,16 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SeniorAssistant.Models;
+using SeniorAssistant.Controllers;
+using LinqToDB;
+using System.Linq;
 
 namespace IdentityDemo.Controllers
 {
 
     [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]/[action]")]
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         /*
         private readonly UserManager<User> _userManager;
@@ -41,19 +43,24 @@ namespace IdentityDemo.Controllers
         */
 
         [HttpPost]
-        public ActionResult _login(string username, string password, bool rememberMe)
+        public ActionResult _login(string username, string password)
         {
-            var result = username != null && password != null && username.Equals("acc1") && password.Equals("123"); //await _signInManager.PasswordSignInAsync(userName, password, rememberMe, lockoutOnFailure: false);
             JsonResponse response = new JsonResponse();
             response.Success = false;
             response.Message = "Username or password is invalid.";
 
-            if (result)
+            var strunz = Db.GetTable<User>().Where(user => user.Username.Equals(username) && user.Password.Equals(password)).ToListAsync().Result;
+
+            if (strunz.Count == 1)
             {
                 var loggedUser = HttpContext.Session.GetString("username");
                 if (loggedUser==null || !loggedUser.Equals(username))
                 {
                     HttpContext.Session.SetString("username", username);
+                    HttpContext.Session.SetString("email", strunz.First().Email);
+                    HttpContext.Session.SetString("name", strunz.First().Name);
+                    HttpContext.Session.SetString("isdoc", strunz.First().Doctor?"true":"false");
+                    //HttpContext.Session.SetString("lastname", strunz.First().LastName);
                     response.Success = true;
                     response.Message = "";
                 }
@@ -65,15 +72,31 @@ namespace IdentityDemo.Controllers
             return Json(response);
         }
 
+        [HttpPost]
         public ActionResult _logout()
         {
             HttpContext.Session.Clear();
             return Json(new JsonResponse());
         }
 
-        public ActionResult _register()
+        [HttpPost]
+        public ActionResult _register(Register register)
         {
-            return Json(new JsonResponse());
+            if(ModelState.IsValid)
+            {
+                User user = new User() { Username = register.Username, Email = register.Email, Password = register.Password};
+                try
+                {
+                    Db.Insert(user);
+                }
+                catch
+                {
+                    return Json(new JsonResponse() { Success = false, Message = "Username already exist" });
+                }
+                _login(user.Username, user.Password);
+                return Json(new JsonResponse() { Success = true });
+            }
+            return Json(new JsonResponse() { Success = false, Message = "Modello non valido" });
         }
         internal class JsonResponse
         {
