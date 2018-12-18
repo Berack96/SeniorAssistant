@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SeniorAssistant.Data;
 
 namespace SeniorAssistant.Controllers
 {
     public abstract class BaseController : Controller
     {
+        protected static readonly string Username = "username";
+
         IDataContextFactory<SeniorDataContext> dbFactory;
         SeniorDataContext db;
 
@@ -19,6 +22,11 @@ namespace SeniorAssistant.Controllers
             db?.Dispose();
 
             base.Dispose(disposing);
+        }
+
+        protected bool IsLogged()
+        {
+            return HttpContext.Session.GetString(Username) != null;
         }
     }
 }

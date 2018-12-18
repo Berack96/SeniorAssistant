@@ -1,9 +1,18 @@
-﻿@inject IEnumerable<IMenuItem> Menu
+﻿@inject IList<IMenuItem> Menu
+@inject IHttpContextAccessor HttpContextAccessor
 
+@{
+    string session = HttpContextAccessor.HttpContext.Session.GetString("username");
+
+    if (session != null) {
+        Menu = new List<IMenuItem>(Menu);
+        Menu.Insert(1, new MenuItem("Personal Data", "/user/" + session));
+    }
+}
 <ul class="sidebar-menu" data-widget="tree">
-    @foreach(var menuItem in Menu)
+    @foreach (var menuItem in Menu)
     {
-        switch(menuItem)
+        switch (menuItem)
         {
             case MenuItem single:
                 <li>

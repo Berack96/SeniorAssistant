@@ -5,6 +5,7 @@ using LinqToDB.DataProvider.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,10 @@ using SeniorAssistant.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SeniorAssistant
 {
@@ -31,7 +36,15 @@ namespace SeniorAssistant
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc();// config =>
+//            {
+//                var policy = new AuthorizationPolicyBuilder()
+//                                 .RequireAuthenticatedUser()
+//                                 .Build();
+//                config.Filters.Add(new AuthorizeFilter(policy));
+//            })
+//            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
             services.AddSession();
 
             services.AddSwaggerGen(c =>
@@ -54,20 +67,30 @@ namespace SeniorAssistant
             services.Configure<Kendo>(Configuration.GetSection("kendo"));
             services.Configure<Theme>(Configuration.GetSection("theme"));
 
+//            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//                .AddCookie(options => {
+//                options.LoginPath = "/";
+//                options.AccessDeniedPath = "/";
+//            });
+
+//            services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>()
+//                .AddEntityFrameworkStores<ApplicationDbContext>();
+
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IEnumerable<IMenuItem>>(new IMenuItem[]
+            services.AddSingleton<IList<IMenuItem>>(new List<IMenuItem>
             {
-                new SubMenu
+                new MenuItem("Index", "/"),
+                new SubMenu()
                 {
-                    Text = "Link veloci",
+                    Text = "Raw Data",
                     Items = new MenuItem[]
                     {
-                        new MenuItem("User", "/"),
+                        new MenuItem("Users", "/users"),
                         new MenuItem("Heartbeat", "/heartbeat"),
                         new MenuItem("Sleep", "/sleep"),
                         new MenuItem("Step", "/step")
                     }
-                },
+                }
             });
 
             var dbFactory = new SeniorDataContextFactory(
@@ -90,6 +113,7 @@ namespace SeniorAssistant
 
             app.UseSession();
             app.UseStaticFiles();
+//            app.UseAuthentication();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -126,19 +150,15 @@ namespace SeniorAssistant
                 db.CreateTableIfNotExists<Heartbeat>();
                 db.CreateTableIfNotExists<Sleep>();
                 db.CreateTableIfNotExists<Step>();
-                try
+                db.CreateTableIfNotExists<User>();
+
+                int count = 0;
+                foreach (string user in names)
                 {
-                    db.CreateTable<User>();
-                    int count = 0;
-                    foreach (string user in names)
-                    {
-                        var username = baseUsername + count;
-                        db.InsertOrReplace(new User { Name = user, Username = username, Password = username, Email = username + "@email.st" } );
-                        count++;
-                    }
+                    var username = baseUsername + count;
+                    db.InsertOrReplace(new User { Role = "user", Name = user, Username = username, Password = username, Email = username + "@email.st" } );
+                    count++;
                 }
-                catch
-                { }
 
                 Random rnd = new Random();
                 DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);

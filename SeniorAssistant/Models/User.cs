@@ -17,11 +17,10 @@ namespace SeniorAssistant.Models
         public string Password { get; set; }
 
         [NotNull]
-        public bool Doctor { get; set; }
+        public string Role { get; set; }
 
         public string Name { get; set; }
 
         public string LastName { get; set; }
-
     }
 }
