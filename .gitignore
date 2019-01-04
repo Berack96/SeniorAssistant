@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 
 SeniorAssistant/SeniorAssistant/wwwroot/*
+/SeniorAssistant/Controllers/TestController.cs
+/SeniorAssistant/Views/Test/*

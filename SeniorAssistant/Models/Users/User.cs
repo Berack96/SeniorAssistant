@@ -1,5 +1,4 @@
 ﻿using LinqToDB.Mapping;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 
 namespace SeniorAssistant.Models
@@ -15,10 +14,7 @@ namespace SeniorAssistant.Models
         [NotNull]
         [JsonIgnore]
         public string Password { get; set; }
-
-        [NotNull]
-        public string Role { get; set; }
-
+        
         public string Name { get; set; }
 
         public string LastName { get; set; }

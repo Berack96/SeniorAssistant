@@ -1,0 +1,30 @@
+﻿@model int
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IDataContextFactory<SeniorDataContext> dbFactory
+@using LinqToDB;
+
+@{
+    ViewBag.Title = "Hello Razor";
+    string username = HttpContextAccessor.HttpContext.Session.GetString("username");
+    var db = dbFactory.Create();
+    var message = (from m in db.Messages
+                    where m.Id.Equals(Model) && m.Reciver.Equals(username)
+                    select m).ToArray().FirstOrDefault();
+}
+
+<div class="content">
+    @if (message == null)
+    {
+        <p class="text-red">Non hai il permesso</p>
+    }
+    else
+    {
+        message.Seen = true;
+        db.Update(message);
+        <p>Messaggio da @message.Username</p>
+        <p>Inviato il @message.Time</p>
+        <div class="info-box-text">
+            @message.Body
+        </div>
+    }
+</div>

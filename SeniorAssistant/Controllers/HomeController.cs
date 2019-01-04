@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace SeniorAssistant.Controllers
 {
@@ -45,9 +43,15 @@ namespace SeniorAssistant.Controllers
             return CheckAuthorized("Data", user);
         }
 
+        [Route("Message/{Id}")]
+        public IActionResult Message(int id)
+        {
+            return CheckAuthorized("Message", id);
+        }
+
         private IActionResult CheckAuthorized(string view, object model = null)
         {
-            if (HttpContext.Session.GetString("username") == null)
+            if (!IsLogged())
             {
                 model = "/" + view;
                 view = "Index";

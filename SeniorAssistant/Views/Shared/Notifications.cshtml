@@ -1,0 +1,82 @@
+﻿@model string
+@inject IDataContextFactory<SeniorDataContext> dbFactory
+
+@{
+    var db = dbFactory.Create();
+    var notifications = (from n in db.Notifications
+                         where n.Username.Equals(Model) && n.Seen == false
+                         orderby n.Time
+                         select n).ToArray();
+    var num = notifications.Length;
+}
+
+<!--
+<script>
+    $(document).ready(
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/Account/_notification",
+            data: { Username: "@Model", Message: "stronzo" },
+            success: function (data) {
+                console.log(data);
+            }
+        })
+    );
+</script>
+-->
+
+<a id="id-notification-toggle" href="#" class="dropdown-toggle" data-toggle="dropdown">
+    <i class="fa fa-bell-o"></i>
+    @if (num != 0)
+    {
+        <span class="label label-warning">@num</span>
+    }
+</a>
+@if (num != 0)
+{
+    <ul id="id-notification-drop" class="dropdown-menu">
+        <li class="header">You have @num notifications</li>
+        <li>
+            <!-- Inner Menu: contains the notifications -->
+            <ul class="menu">
+                @foreach (var notification in notifications)
+                {
+                    <li>
+                        <!-- start notification -->
+                        <a id="notification-@notification.Id" href="#">
+                            <i class="fa fa-users text-aqua">@notification.Time</i><br />
+                            @notification.Message
+                        </a>
+                    </li>
+                    <!-- end notification -->
+                }
+            </ul>
+        </li>
+        <!-- <li class="footer"><a href="#">View all</a></li> -->
+    </ul>
+
+    <script>
+        var user = "@Model";
+        $("[id^='notification-']").on("click", function () {
+            var id = this.id.replace(/notification-/g, '');
+            var allId = this.id;
+            $.ajax({
+                type: "PUT",
+                dataType: "json",
+                url: "/Account/_notification",
+                data: { id: id },
+                success: function () {
+                    $("#" + allId).remove();
+                    var num = parseInt($("#id-notification-toggle span").html()) - 1;
+                    if (num == 0) {
+                        $("#id-notification-toggle span").remove();
+                        $("#id-notification-drop").remove();
+                    }
+                    else
+                        $("#id-notification-toggle span").html(num);
+                }
+            });
+        });
+    </script>
+}
