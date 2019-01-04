@@ -8,13 +8,15 @@
     var username = session.GetString("username");
 
     bool auth = username.Equals(Model);
-    if (session.GetString("role").Equals("doctor"))
+    bool isDoc = session.GetString("role").Equals("doctor");
+    Patient patient = null;
+    if (isDoc)
     {
         var db = dbFactory.Create();
-        var isDocPatient = (from p in db.Patients
-                       where p.Username.Equals(Model) && p.Doctor.Equals(username)
-                       select p).ToArray().FirstOrDefault() != null;
-        auth = auth || isDocPatient;
+        patient = (from p in db.Patients
+                   where p.Username.Equals(Model) && p.Doctor.Equals(username)
+                   select p).ToArray().FirstOrDefault();
+        auth = auth || patient != null;
     }
 }
 
@@ -25,9 +27,38 @@
 else
 {
     // Aggiungere un qualcosa per scegliere le ore da vedere (Max 48?)
-    <input id="hours-data" type="text" placeholder="hours" value="24" />
-    <button id="refresh-hours" class="fc-button">Cambia ora</button>
-    <div id="chart-data"></div>
+    <div>
+        <input id="hours-data" type="text" placeholder="hours" value="24" />
+        <button id="refresh-hours" class="fc-button">Cambia ora</button>
+        <div id="chart-data"></div>
+    </div>
+    @if(isDoc && patient != null)
+    {
+        <div>
+            <p>NOTEEEEEEEEEEEE: l'alunno dorme durante la lezione</p>
+            <textarea id="note-area" placeholder="Scrivi una nota..">@patient.Notes</textarea>
+            <button id="send-note" class="btn">Salva</button>
+            <p id="note-error"></p>
+        </div>
+        <script>
+            $("#send-note").on("click", function () {
+                var text = $("#note-area").val().trim();
+                $.ajax({
+                    url: "/Account/_addNote",
+                    type: "PUT",
+                    data: {
+                        Patient: "@Model", Text: text
+                    },
+                    success: function (data) {
+                        $("#note-error").html(data.success?"Nota salvata":data.message);
+                    }
+                })
+            });
+        </script>
+    }
+
+
+
     <script>
         $("#hours-data").on("change keyup paste click", function () {
             var t = $(this);

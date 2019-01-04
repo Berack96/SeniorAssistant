@@ -27,13 +27,13 @@
                           where d.Username.Equals(patientData.Doctor)
                           select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
 
-            <p class="text-bold">@doctor.Name @doctor.LastName</p>
-            <p class="text-fuchsia">@doctor.Location</p>
+            <p class="text-bold">Dottore: @doctor.Name @doctor.LastName</p>
+            <p class="text-fuchsia">Dove mi puoi trovare? @doctor.Location</p>
             <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@patientData.Notes</textarea>
 
             <div id="send-doc-message">
                 <p>Invia un messaggio al tuo dottore</p>
-                <textarea id="doc-message" class="progress-text" placeholder="scrivi qui">@patientData.Notes</textarea>
+                <textarea id="doc-message" class="progress-text" placeholder="scrivi qui"></textarea>
                 <button id="btn-send-message">Invia</button>
                 <p id="message-error" class="text-red"></p>
 

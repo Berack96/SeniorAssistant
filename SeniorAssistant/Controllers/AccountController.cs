@@ -13,7 +13,7 @@ namespace IdentityDemo.Controllers
     [Route("[controller]/[action]")]
     public class AccountController : BaseController
     {
-        private readonly JsonResponse OkJson = new JsonResponse();
+        private static readonly string NoteModified = "Il tuo dottore ha modificato la nota per te";
 
         [HttpPost]
         public ActionResult _login(string username, string password)
@@ -35,9 +35,8 @@ namespace IdentityDemo.Controllers
                     HttpContext.Session.SetString(Username, username);
                     HttpContext.Session.SetString("email", user.Email);
                     HttpContext.Session.SetString("name", user.Name);
-                    //HttpContext.Session.SetString("lastname", user.LastName);
-
-
+                    HttpContext.Session.SetString("lastname", user.LastName);
+                    
                     var isDoc = (from d in Db.Doctors
                                  where d.Username.Equals(username)
                                  select d).ToArray().FirstOrDefault() != null;
@@ -166,6 +165,20 @@ namespace IdentityDemo.Controllers
                 Db.Insert(message);
 
                 return Json(new JsonResponse());
+            });
+        }
+
+        [HttpPut]
+        public ActionResult _addNote(string patient, string text)
+        {
+            return LoggedAccessDataOf(patient, () =>
+            {
+                var pat = Db.Patients.Where((p) => p.Username.Equals(patient)).FirstOrDefault();
+                pat.Notes = text;
+                Db.Update(pat);
+                _notification(patient, NoteModified);
+
+                return Json(OkJson);
             });
         }
     }

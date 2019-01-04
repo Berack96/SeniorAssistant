@@ -12,6 +12,7 @@ namespace SeniorAssistant.Controllers
         protected static readonly string InvalidModel = "Modello non valido";
         protected static readonly string NoAuthorized = "Non sei autorizzato a vedere questi dati";
         protected static readonly string Username = "username";
+        protected readonly JsonResponse OkJson = new JsonResponse();
 
         IDataContextFactory<SeniorDataContext> dbFactory;
         SeniorDataContext db;
@@ -59,16 +60,16 @@ namespace SeniorAssistant.Controllers
             });
         }
 
-        protected ActionResult LoggedAccessDataOf(string username, Func<ActionResult> success)
+        protected ActionResult LoggedAccessDataOf(string username, Func<ActionResult> success, bool patients = true)
         {
             return LoggedAction(() =>
             {
                 var loggedUser = HttpContext.Session.GetString(Username);
                 var condition = username.Equals(loggedUser);
 
-                condition = condition || (from patient in Db.Patients
-                                          where patient.Doctor.Equals(loggedUser) && patient.Username.Equals(username)
-                                          select patient).ToArray().FirstOrDefault() != null;
+                condition = condition || (patients && (from patient in Db.Patients
+                                                       where patient.Doctor.Equals(loggedUser) && patient.Username.Equals(username)
+                                                       select patient).ToArray().FirstOrDefault() != null);
 
                 return condition ?
                 success.Invoke() :
