@@ -21,6 +21,6 @@ namespace SeniorAssistant.Models
     public class SubMenu : IMenuItem
     {
         public string Text { get; set; }
-        public IEnumerable<MenuItem> Items { get; set; }
+        public IList<MenuItem> Items { get; set; }
     }
 }

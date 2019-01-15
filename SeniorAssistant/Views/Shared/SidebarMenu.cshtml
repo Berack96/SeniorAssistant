@@ -1,12 +1,30 @@
 ﻿@inject IList<IMenuItem> Menu
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IDataContextFactory<SeniorDataContext> dbFactory
 
 @{
-    string session = HttpContextAccessor.HttpContext.Session.GetString("username");
+    var session = HttpContextAccessor.HttpContext.Session;
+    string username = session.GetString("username");
 
-    if (session != null) {
+    if (username != null)
+    {
         Menu = new List<IMenuItem>(Menu);
-        Menu.Insert(1, new MenuItem("Personal Data", "/user/" + session));
+        Menu.RemoveAt(1);
+        Menu.Insert(1, new MenuItem("Dati personali", "/user/" + username));
+        if (session.GetString("role").Equals("doctor"))
+        {
+            var db = dbFactory.Create();
+            var patients = (from p in db.Patients
+                            where p.Doctor.Equals(username)
+                            join u in db.Users on p.Username equals u.Username
+                            select new { Username = p.Username, Name = u.Name + " " + u.LastName }).ToArray();
+            var sub = new SubMenu() { Text = "Pazienti", Items = new List<MenuItem>() };
+            foreach (var p in patients)
+            {
+                sub.Items.Add(new MenuItem(p.Name, "/user/" + p.Username));
+            }
+            Menu.Add(sub);
+        }
     }
 }
 <ul class="sidebar-menu" data-widget="tree">
