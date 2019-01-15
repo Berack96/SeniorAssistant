@@ -1,26 +1,22 @@
 ﻿using LinqToDB.Mapping;
-using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 
 namespace SeniorAssistant.Models
 {
     public class User : IHasUsername
     {
-        [PrimaryKey]
-        [NotNull]
+        [Column(IsPrimaryKey = true, CanBeNull = false)]
         public string Username { get; set; }
 
         [NotNull]
         public string Email { get; set; }
 
         [NotNull]
+        [JsonIgnore]
         public string Password { get; set; }
-
-        [NotNull]
-        public bool Doctor { get; set; }
-
+        
         public string Name { get; set; }
 
         public string LastName { get; set; }
-
     }
 }

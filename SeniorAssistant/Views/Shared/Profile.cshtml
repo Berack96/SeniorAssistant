@@ -1,16 +1,162 @@
-﻿@model User
-@inject IHttpContextAccessor HttpContextAccessor
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IDataContextFactory<SeniorDataContext> dbFactory
 
 @{
     var session = HttpContextAccessor.HttpContext.Session;
+    var db = dbFactory.Create();
+    var username = session.GetString("username");
+    var patientData = db.Patients.Where(p => p.Username.Equals(username)).ToArray().FirstOrDefault();
+    var hasDoc = patientData != null;
 }
 
 <div class="content">
-    <h2 class="alert-success" style="text-align:center">
-        Welcome @session.GetString("username")
+    <div class="pull-left" , style="width: 50%">
+        <h2 class="alert-success" style="text-align:center">
+            Welcome @username
+        </h2>
+        name: @session.GetString("name")<br />
+        lastname: @session.GetString("lastname")<br />
+        email: @session.GetString("email")<br />
+    </div>
 
-    </h2>
-    name: @session.GetString("name")<br />
-    lastname: @session.GetString("lastname")<br />
-    email: @session.GetString("email")
+    <div class="box pull-right" , style="width: 45%">
+        @if (hasDoc) // is patient and has doc, must show doc data
+        {
+            var doctor = (from u in db.Users
+                          join d in db.Doctors on u.Username equals d.Username
+                          where d.Username.Equals(patientData.Doctor)
+                          select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
+
+            <p class="text-bold">Dottore: @doctor.Name @doctor.LastName</p>
+            <p class="text-fuchsia">Dove mi puoi trovare? @doctor.Location</p>
+            <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@patientData.Notes</textarea>
+
+            <div id="send-doc-message">
+                <p>Invia un messaggio al tuo dottore</p>
+                <textarea id="doc-message" class="progress-text" placeholder="scrivi qui"></textarea>
+                <button id="btn-send-message">Invia</button>
+                <p id="message-error" class="text-red"></p>
+
+                <script>
+                    $("#btn-send-message").on("click", function () {
+                        var body = $("#doc-message").val().trim();
+                        var endMessage = $("#message-error");
+                        if (body.length < 20) {
+                            endMessage.html("Messaggio non valido (minimo 20 caratteri)");
+                            return false;
+                        }
+
+                        $.ajax({
+                            url: "Account/_sendMessage",
+                            type: "POST",
+                            data: {
+                                Reciver: "@doctor.Username",
+                                Body: body
+                            },
+                            success: function () {
+                                $("#doc-message").val("");
+                                endMessage.html("Messaggio inviato");
+                            }
+                        });
+                    });
+                </script>
+            </div>
+        }
+        else
+        {
+            dynamic[] data;
+            Type type = null;
+            string title = null;
+            var docData = db.Doctors.Where(d => d.Username.Equals(username)).ToArray().FirstOrDefault();
+
+            if (docData != null) // is DOC
+            {
+                // see all the patient of the doc
+                title = "Lista dei pazienti";
+                var patients = (from u in db.Users
+                                join p in db.Patients on u.Username equals p.Username
+                                where p.Doctor.Equals(docData.Username)
+                                select new { u.Username, u.Name, u.LastName, p.Notes, Profile = "<a href=\\\"/user/" + u.Username + "\\\">Profile</a>" }).ToArray();
+                data = patients;
+                type = patients.FirstOrDefault().GetType();
+            }
+            else // is a patient and need to choose a doctor
+            {
+                // choose which doc you want
+                title = "Scegli un Doc";
+                var docs = (from u in db.Users
+                            join d in db.Doctors on u.Username equals d.Username
+                            select new { u.Username, u.Name, u.LastName, d.Location, Choose = "<a id=\\\"choose-" + u.Username + "\\\" href=#>Scegli</a>" }).ToArray();
+                data = docs;
+                type = docs.FirstOrDefault().GetType();
+            }
+
+            var fields = new List<string>();
+            foreach (var field in type.GetProperties())
+            {
+                fields.Add(field.Name);
+            }
+
+            <p>@title</p>
+            <div id="var-table"></div>
+            <script>
+                var datas = [
+                    @foreach (var el in data)
+                    {
+                        @:{
+                        @foreach (var field in fields)
+                        {
+                            @field@:: "@Html.Raw(type.GetProperty(field).GetValue(el, null))",
+                        }
+                        @:},
+                    }
+                ];
+
+                $(document).ready(function () {
+                    $("#var-table").kendoGrid({
+                        dataSource: {
+                            data: datas,
+                            schema: {
+                                model: {
+                                    fields: {
+                                        @foreach (var field in fields)
+                                        {
+                                            @field@: : { type: "@field.GetType().Name" },
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scrollable: true,
+                        sortable: true,
+                        filterable: true,
+                        columns: [
+                            @foreach (var field in fields)
+                            {
+                                @:{ field: "@field", title: "@field", template: "#=@field#" },
+                            }
+                        ]
+                    });
+                    @if(docData == null) // choose a doc
+                    {
+                        <text>
+                        $('[id^="choose-"]').on("click", function () {
+                            var id = this.id.replace("choose-", '');
+                            $.ajax({
+                                type: "POST",
+                                url: "/Account/_addDoc",
+                                data: { doctor: id },
+                                success: function (data) {
+                                    if (data.success) {
+                                        window.location.reload();
+                                    }
+                                }
+                            })
+                        })
+                        </text>
+                    }
+                });
+            </script>
+        }
+    </div>
 </div>

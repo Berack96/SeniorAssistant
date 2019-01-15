@@ -1,8 +1,10 @@
 ﻿<ul style="list-style: none">
     <li class="user-header">
-        <input type="text" id="regUsername" placeholder="username" />
-        <input type="password" id="regPassword" placeholder="password" />
-        <input type="email" id="regEmail" placeholder="example@qualcosa.qualcosa" />
+        <input type="text" id="regUsername" placeholder="Username" required />
+        <input type="text" id="regName" placeholder="Name" />
+        <input type="text" id="regLastname" placeholder="Lastname" />
+        <input type="password" id="regPassword" placeholder="Password" required />
+        <input type="email" id="regEmail" placeholder="Email" required />
         <label>Doc?</label><input type="checkbox" id="regDoctor" />
         <div>
             <button class="btn-default btn btn-flat" id="register-btn">Register</button>
@@ -13,20 +15,26 @@
 
 <script>
     $("#register-btn").on("click", function () {
-        var regUsername = $("#regUsername").val();
-        var regPassword = $("#regPassword").val();
-        var regEmail = $("#regEmail").val();
-        var regDoctor = $("#regDoctor").is(":checked");
+        var username = $("#regUsername").val();
+        var name = $("#regName").val();
+        var lastname = $("#regLastname").val();
+        var password = $("#regPassword").val();
+        var email = $("#regEmail").val();
+        var role = $("#regDoctor").is(":checked")? "Doctor":"User";
+
         $.ajax({
             url: "/Account/_register",
-            data: { Username: regUsername, Password: regPassword, Email: regEmail},
+            data: {
+                Username: username,
+                Name: name,
+                Lastname: lastname,
+                Password: password,
+                Email: email,
+                Role: role
+            },
             dataType: "json",
             type: "POST",
             success: function (data) {
-                //se data.success->reload 
-                //se data.fail->indica errori
-
-                console.log(data);
                 var msg = $("#msg-reg");
                 if (data.success) {
                     window.location.reload();

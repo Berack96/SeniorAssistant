@@ -10,24 +10,24 @@ namespace SeniorAssistant.Controllers.Services
     public abstract class CrudController<TEntity> : BaseController
         where TEntity : class, IHasUsername
     {
-        [HttpGet]
-        public async Task<IEnumerable<TEntity>> Read() => await Db.GetTable<TEntity>().ToListAsync();
-
         [HttpGet("{username}")]
-        public async Task<TEntity> Read(string username) => await Db.GetTable<TEntity>().FirstOrDefaultAsync(c => c.Username.Equals(username));
-
-        [HttpPost]
-        public async Task Create([FromBody]TEntity item) => await Db.InsertAsync(item);
-
-        [HttpPut("{username}")]
-        public async Task Update(string username, [FromBody]TEntity item)
+        public async Task<IActionResult> Read(string username)
         {
-            item.Username = username;
-
-            await Db.UpdateAsync(item);
+            return LoggedAccessDataOf(username, () =>
+            {
+                return Json(Db.GetTable<TEntity>().Where((u) => u.Username.Equals(username)).ToArray());
+            });
         }
 
-        [HttpDelete("{username}")]
-        public async Task Delete(string username) => await Db.GetTable<TEntity>().Where(c => c.Username.Equals(username)).DeleteAsync();
+        [HttpPut("{username}")]
+        public async Task<IActionResult> Update(string username, [FromBody] TEntity entity)
+        {
+            return LoggedAccessDataOf(username, () =>
+            {
+                entity.Username = username;
+                Db.Update(entity);
+                return Json(OkJson);
+            }, false);
+        }
     }
 }

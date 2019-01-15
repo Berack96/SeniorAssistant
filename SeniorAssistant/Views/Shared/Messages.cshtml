@@ -1,0 +1,90 @@
+﻿@model string
+@inject IDataContextFactory<SeniorDataContext> dbFactory
+
+@{
+    var db = dbFactory.Create();
+    var maxMessage = 10;
+    var notSeen = (from n in db.Messages
+                   where n.Reciver.Equals(Model) && n.Seen == false
+                   orderby n.Time descending
+                   select n).Take(maxMessage).ToArray();
+
+    var messages = new Message[maxMessage];
+    var num = notSeen.Length;
+
+    int i;
+    for (i=0; i<num; i++)
+    {
+        messages[i] = notSeen[i];
+    }
+
+    if (num < maxMessage)
+    {
+        var messSeen = (from n in db.Messages
+                        where n.Reciver.Equals(Model) && n.Seen == true
+                        orderby n.Time descending
+                        select n).Take(maxMessage-num).ToArray();
+
+        foreach(var m in messSeen)
+        {
+            messages[i] = m;
+            i++;
+        }
+    }
+}
+
+<!--
+<script>
+    $(document).ready(
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: "/Account/_message",
+            data: { Username: "@Model", Message: "stronzo" },
+            success: function (data) {
+                console.log(data);
+            }
+        })
+    );
+</script>
+-->
+
+<a id="id-message-toggle" href="#" class="dropdown-toggle" data-toggle="dropdown">
+    <i class="fa fa-envelope-o"></i>
+    @if (num != 0)
+    {
+        <span class="label label-danger">
+            @num 
+            @if(num > maxMessage)
+            {
+                @:+
+            }
+        </span>
+    }
+</a>
+@if (messages.Length != 0)
+{
+    <ul id="id-message-drop" class="dropdown-menu">
+        <li class="header">You have @num unread message</li>
+        <li>
+            <!-- Inner Menu: contains the messages -->
+            <ul class="menu">
+                @foreach (var message in messages)
+                {
+                    if(message != null)
+                    {
+                        <li>
+                            <!-- start notification -->
+                            <a id="message-@message.Id" @if(message.Seen) {<text>class= "bg-gray"</text>} href="/Message/@message.Id">
+                                <i class="fa text-lime">@message.Time</i><br />
+                                @message.Body
+                            </a>
+                        </li>
+                        <!-- end message -->
+                    }
+                }
+            </ul>
+        </li>
+        <!-- <li class="footer"><a href="#">View all</a></li> -->
+    </ul>
+}

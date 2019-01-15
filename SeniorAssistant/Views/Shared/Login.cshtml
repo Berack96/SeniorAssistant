@@ -1,13 +1,9 @@
-﻿<a href="#" class="dropdown-toggle" data-toggle="dropdown">
-    <!-- The user image in the navbar-->
-    <!-- hidden-xs hides the username on small devices so only the image appears. -->
-</a>
-<ul style="list-style-type:none">
+﻿<ul style="list-style-type:none">
     <li class="user-header">
         <input type="text" id="username" placeholder="username" />
         <input type="password" id="password" placeholder="password" />
         <div>
-            <button class="btn-default btn btn-flat" id="login-btn">Login</button>    
+            <button class="btn-default btn btn-flat" id="login-btn">Login</button>
         </div>
         <p id="msg" class="login-box-msg"></p>
     </li>
@@ -23,19 +19,17 @@
             dataType: "json",
             type: "POST",
             success: function (data) {
-                console.log(data);
                 var msg = $("#msg");
                 if (data.success) {
-                    msg.hide();
-                    // app.navigate("");
                     window.location.reload();
                 } else {
                     msg.html(data.message).show();
                     $("#user-menu").addClass("open");
                 }
+                return false;
             },
             error: function (xhr, status, error) {
-                alert(xhr.responseText)
+                alert(xhr.status+" "+xhr.responseText)
             }
         })
     });

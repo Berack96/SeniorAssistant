@@ -1,17 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace SeniorAssistant.Controllers
 {
     [ApiExplorerSettings(IgnoreApi = true)]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        private readonly ISession session;
-        public HomeController(IHttpContextAccessor httpContextAccessor)
-        {
-            this.session = httpContextAccessor.HttpContext.Session;
-        }
-
         [Route("")]
         [Route("Home")]
         [Route("Index")]
@@ -23,31 +16,47 @@ namespace SeniorAssistant.Controllers
         [Route("Heartbeat")]
         public IActionResult Heartbeat()
         {
-            return View();
+            return CheckAuthorized("Heartbeat");
         }
 
         [Route("Sleep")]
         public IActionResult Sleep()
         {
-            return View();
+            return CheckAuthorized("Sleep");
         }
 
         [Route("Step")]
         public IActionResult Step()
         {
-            return View();
+            return CheckAuthorized("Step");
         }
 
         [Route("Users")]
         public IActionResult Users()
         {
-            return View();
+            return CheckAuthorized("Users");
         }
 
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
-            return View("data", user);
+            return CheckAuthorized("Data", user);
+        }
+
+        [Route("Message/{Id}")]
+        public IActionResult Message(int id)
+        {
+            return CheckAuthorized("Message", id);
+        }
+
+        private IActionResult CheckAuthorized(string view, object model = null)
+        {
+            if (!IsLogged())
+            {
+                model = "/" + view;
+                view = "Index";
+            }
+            return View(view, model);
         }
     }
 }

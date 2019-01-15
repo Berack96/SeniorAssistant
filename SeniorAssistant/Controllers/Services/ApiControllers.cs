@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SeniorAssistant.Models;
+using SeniorAssistant.Models.Users;
 
 namespace SeniorAssistant.Controllers.Services
 {
@@ -17,5 +18,13 @@ namespace SeniorAssistant.Controllers.Services
 
     [Route("api/[controller]")]
     public class UserController : CrudController<User>
+    { }
+
+    [Route("api/[controller]")]
+    public class PatientController : CrudController<Patient>
+    { }
+
+    [Route("api/[controller]")]
+    public class DoctorController : CrudController<Doctor>
     { }
 }

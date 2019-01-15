@@ -5,7 +5,6 @@ using LinqToDB.DataProvider.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeniorAssistant.Configuration;
@@ -13,8 +12,8 @@ using SeniorAssistant.Data;
 using SeniorAssistant.Models;
 using SeniorAssistant.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SeniorAssistant.Models.Users;
 
 namespace SeniorAssistant
 {
@@ -31,7 +30,15 @@ namespace SeniorAssistant
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc();// config =>
+//            {
+//                var policy = new AuthorizationPolicyBuilder()
+//                                 .RequireAuthenticatedUser()
+//                                 .Build();
+//                config.Filters.Add(new AuthorizeFilter(policy));
+//            })
+//            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
             services.AddSession();
 
             services.AddSwaggerGen(c =>
@@ -54,20 +61,30 @@ namespace SeniorAssistant
             services.Configure<Kendo>(Configuration.GetSection("kendo"));
             services.Configure<Theme>(Configuration.GetSection("theme"));
 
+//            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//                .AddCookie(options => {
+//                options.LoginPath = "/";
+//                options.AccessDeniedPath = "/";
+//            });
+
+//            services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>()
+//                .AddEntityFrameworkStores<ApplicationDbContext>();
+
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IEnumerable<IMenuItem>>(new IMenuItem[]
+            services.AddSingleton<IList<IMenuItem>>(new List<IMenuItem>
             {
-                new SubMenu
+                new MenuItem("Index", "/"),
+                new SubMenu()
                 {
-                    Text = "Link veloci",
+                    Text = "Raw Data",
                     Items = new MenuItem[]
                     {
-                        new MenuItem("User", "/"),
+                        new MenuItem("Users", "/users"),
                         new MenuItem("Heartbeat", "/heartbeat"),
                         new MenuItem("Sleep", "/sleep"),
                         new MenuItem("Step", "/step")
                     }
-                },
+                }
             });
 
             var dbFactory = new SeniorDataContextFactory(
@@ -77,6 +94,7 @@ namespace SeniorAssistant
 
             services.AddSingleton<IDataContextFactory<SeniorDataContext>>(dbFactory);
             SetupDatabase(dbFactory);
+            FillDatabase(dbFactory);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,6 +108,7 @@ namespace SeniorAssistant
 
             app.UseSession();
             app.UseStaticFiles();
+//            app.UseAuthentication();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -120,55 +139,83 @@ namespace SeniorAssistant
         {
             using (var db = dataContext.Create())
             {
-                const string baseUsername = "vecchio";
-                string[] users = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
-                    
                 db.CreateTableIfNotExists<Heartbeat>();
                 db.CreateTableIfNotExists<Sleep>();
                 db.CreateTableIfNotExists<Step>();
-                try
+                db.CreateTableIfNotExists<User>();
+                db.CreateTableIfNotExists<Doctor>();
+                db.CreateTableIfNotExists<Patient>();
+                db.CreateTableIfNotExists<Notification>();
+                db.CreateTableIfNotExists<Message>();
+            }
+        }
+
+        void FillDatabase(IDataContextFactory<SeniorDataContext> dataContext)
+        {
+            using (var db = dataContext.Create())
+            {
+                Random rnd = new Random();
+
+                List<User> users = new List<User>();
+
+                List<Doctor> docs = db.Doctors.ToListAsync().Result;
+                if (docs.Count == 0)
                 {
-                    db.CreateTable<User>();
+                    users.Add(new User { Name = "Alfredo", LastName = "Parise", Email = "alfred.pary@libero.it", Username = "alfredigno", Password = "alfy" });
+                    users.Add(new User { Name = "Edoardo", LastName = "Marzio", Email = "edo.marzio@libero.it", Username = "marzietto", Password = "edo64" });
+
+                    docs.Add(new Doctor { Username = "alfredigno", Location = "Brasile" });
+                    docs.Add(new Doctor { Username = "marzietto", Location = "Uganda" });
+
+                    foreach (var doc in docs)
+                        db.InsertOrReplace(doc);
+                }
+
+                List<Patient> patients = db.Patients.ToListAsync().Result;
+                if (patients.Count == 0)
+                {
+                    const string baseUsername = "vecchio";
+                    string[] names = { "Mario", "Giovanni", "Aldo", "Giacomo", "Marcello", "Filippo" };
+                    string[] lastnames = { "Rossi", "Storti", "Baglio", "Poretti", "Marcelli", "Martelli" };
                     int count = 0;
-                    foreach (string user in users)
+                    for (count=0; count<names.Length; count++)
                     {
                         var username = baseUsername + count;
-                        db.InsertOrReplace(new User { Name = user, Username = username, Password = username, Email = username + "@email.st" } );
-                        count++;
+                        users.Add(new User { Name = names[count], LastName = lastnames[count], Username = username, Password = username, Email = username + "@email.st" });
+                        patients.Add(new Patient { Username = username, Doctor = docs[rnd.Next(docs.Count)].Username });
                     }
+                    
+                    foreach (var patient in patients)
+                        db.InsertOrReplace(patient);
                 }
-                catch
-                { }
 
-                Random rnd = new Random();
+                foreach (var user in users)
+                    db.InsertOrReplace(user);
+
                 DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
                 now = now.AddHours(DateTime.Now.Hour).AddMinutes(30);
                 try
                 {
-                    double totalHours = 50;
-                    try {
+                    double totalHours = 48;
+                    try
+                    {
                         DateTime maxTimeInDB = db.GetTable<Heartbeat>().MaxAsync(x => x.Time).Result;
                         TimeSpan span = now.Subtract(maxTimeInDB);
                         totalHours = span.TotalHours;
-                    } catch { }
-                
-                    for (int i = 0; i<totalHours; i++)
+                    }
+                    catch { }
+
+                    for (int i = 0; i < totalHours; i++)
                     {
                         DateTime time = now.AddHours(-i);
-                        for (int num = 0; num < users.Length; num++)
+                        foreach (var patient in patients)
                         {
-                            string user = baseUsername + num;
-
-                            if (time.Day != now.Day)
+                            if (time.Day != now.Day && time.Hour == 21)
                             {
-                                db.Insert(new Sleep() { Username = user, Time = time, Value = rnd.Next(5 * 3600000, 9 * 3600000) });
+                                db.Insert(new Sleep() { Username = patient.Username, Time = time, Value = rnd.Next(5 * 3600000, 9 * 3600000) });
                             }
-                            db.Insert(new Heartbeat() { Username = user, Time = time, Value = rnd.Next(50, 120) });
-                            db.Insert(new Step() { Username = user, Time = time, Value = rnd.Next(100, 500) });
-                        }
-                        if (time.Day != now.Day)
-                        {
-                            now = now.AddDays(-1);
+                            db.Insert(new Heartbeat() { Username = patient.Username, Time = time, Value = rnd.Next(50, 120) });
+                            db.Insert(new Step() { Username = patient.Username, Time = time, Value = rnd.Next(100, 500) });
                         }
                     }
                 }

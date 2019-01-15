@@ -8,19 +8,11 @@
 <script>
     $(document).ready(function () {
         var baseUrl = "@Url.Content("~/api/user/")";
-
+        
         $("#grid").kendoGrid({
             dataSource: {
                 transport: {
                     read: { url: baseUrl, type: "GET" }
-
-                    /*
-                    parameterMap: function (model, operation) {
-                        if (operation !== "read" && model) {
-                            return kendo.stringify(model);
-                        }
-                    }
-                    */
                 },
                 serverPaging: false,
                 serverSorting: false,
@@ -30,7 +22,8 @@
                         id: "username",
                         fields: {
                             username: { type: "string" },
-                            name: { type: "string" }
+                            name: { type: "string" },
+                            lastName: { type: "string" }
                         }
                     }
                 }
@@ -40,9 +33,10 @@
             filterable: true,
             editable: false,
             columns: [
-                { field: "username", title: "Username" },
                 { field: "name", title: "Name" },
-                { field: "url", title: "",template:'<a href=/user/#=username#>Vedi Dati</a>'}/*,
+                { field: "lastName", title: "Lastname" },
+                { field: "url", title: "", template: '<a href=/user/#=username#>Vedi Dati</a>' }
+                /*,
                 { field: "time", title: "Date/Time", format: "{dd/MM/yyyy HH}" },
                 { field: "value", title: "Heartbeats" }
                 */

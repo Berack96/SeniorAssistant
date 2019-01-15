@@ -3,7 +3,15 @@
     var action = ViewContext.RouteData.Values["Action"];
 }
 
-<ol class="breadcrumb">
-    <li><a href="/"><i class="fa fa-dashboard"></i> @controller</a></li>
-    <li class="active">@action</li>
-</ol>
+<div class="breadcrumb">
+    @Html.ActionLink("Home", "Index", "Home")
+    @if (controller.ToString() != "Home")
+    {
+        @:> @Html.ActionLink(controller.ToString(), "Index", controller.ToString())
+    }
+    @if (action.ToString() != "Index")
+    {
+        @:> @Html.ActionLink(action.ToString(), action.ToString(), controller.ToString())
+    }
+    
+</div>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SeniorAssistant.Models
 {
@@ -12,8 +9,7 @@ namespace SeniorAssistant.Models
 
     public class MenuItem : IMenuItem
     {
-        public MenuItem(string text) : this(text, "#") { }
-        public MenuItem(string text, string href)
+        public MenuItem(string text, string href = "#")
         {
             Text = text;
             HRef = href;
@@ -25,6 +21,6 @@ namespace SeniorAssistant.Models
     public class SubMenu : IMenuItem
     {
         public string Text { get; set; }
-        public IEnumerable<MenuItem> Items { get; set; }
+        public IList<MenuItem> Items { get; set; }
     }
 }
