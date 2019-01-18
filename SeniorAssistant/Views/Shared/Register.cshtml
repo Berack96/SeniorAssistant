@@ -5,7 +5,7 @@
         <input type="text" id="regLastname" placeholder="Lastname" />
         <input type="password" id="regPassword" placeholder="Password" required />
         <input type="email" id="regEmail" placeholder="Email" required />
-        <label>Doc?</label><input type="checkbox" id="regDoctor" />
+        <input type="text" id="regDoctor" placeholder="Doctor only (543210)" />
         <div>
             <button class="btn-default btn btn-flat" id="register-btn">Register</button>
         </div>
@@ -20,17 +20,19 @@
         var lastname = $("#regLastname").val();
         var password = $("#regPassword").val();
         var email = $("#regEmail").val();
-        var role = $("#regDoctor").is(":checked")? "Doctor":"User";
+        var code = $("#regDoctor").val();
 
         $.ajax({
             url: "/Account/_register",
             data: {
-                Username: username,
-                Name: name,
-                Lastname: lastname,
-                Password: password,
-                Email: email,
-                Role: role
+                Code: code,
+                User: {
+                    Username: username,
+                    Name: name,
+                    Lastname: lastname,
+                    Password: password,
+                    Email: email
+                }
             },
             dataType: "json",
             type: "POST",
@@ -43,7 +45,7 @@
                 }
             },
             error: function (xhr, status, error) {
-                alert(xhr.responseText)
+                alert(error)
             }
         })
     });

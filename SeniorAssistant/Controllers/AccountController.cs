@@ -6,6 +6,8 @@ using LinqToDB;
 using System.Linq;
 using System;
 using SeniorAssistant.Models.Users;
+using System.Web;
+using System.IO;
 
 namespace IdentityDemo.Controllers
 {
@@ -61,13 +63,20 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public ActionResult _register(User user)
+        public ActionResult _register(User user, string code = "")
         {
             return Action(() =>
             {
                 try
                 {
                     Db.Insert(user);
+                    if(code != null && code.Equals("444442220"))
+                    {
+                        Db.Insert(new Doctor
+                        {
+                            Username = user.Username
+                        });
+                    };
                     return _login(user.Username, user.Password);
                 }
                 catch
@@ -180,6 +189,50 @@ namespace IdentityDemo.Controllers
 
                 return Json(OkJson);
             });
+        }
+
+        
+        [HttpPost]
+        public async System.Threading.Tasks.Task<ActionResult> Save(IFormFile file)
+        {
+            return LoggedAction(() =>
+            {
+                var loggedUser = HttpContext.Session.GetString(Username);
+                if (file.Length > 0)
+                {
+                    var name = loggedUser + ".jpg";
+                    var path = Path.Combine(("~/uploads/"), name);
+                    var stream = new FileStream(path, FileMode.Create);
+                    file.CopyTo(stream);
+                    var user = (from u in Db.Users
+                                where u.Username.Equals(loggedUser)
+                                select u).FirstOrDefault();
+                    user.Avatar = path;
+
+                    Db.Update(User);
+                }
+
+                return Json(OkJson);
+            });
+
+            /*
+            var loggedUser = HttpContext.Session.GetString(Username);
+
+            long size = file.Length;
+
+            // full path to file in temp location
+            var filePathPart = Path.GetDirectoryName("~/AdminLTE-2.4.3/dist/img/");
+            var fileName = Path.GetFileName(loggedUser + ".jpg");
+            var filePath = Path.Combine(filePathPart,fileName);
+            if (size > 0)
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+            }
+            return Json(new JsonResponse());
+            */
         }
     }
 }

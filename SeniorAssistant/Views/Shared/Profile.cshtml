@@ -78,7 +78,7 @@
                                 where p.Doctor.Equals(docData.Username)
                                 select new { u.Username, u.Name, u.LastName, p.Notes, Profile = "<a href=\\\"/user/" + u.Username + "\\\">Profile</a>" }).ToArray();
                 data = patients;
-                type = patients.FirstOrDefault().GetType();
+                type = patients.FirstOrDefault()?.GetType();
             }
             else // is a patient and need to choose a doctor
             {
@@ -91,15 +91,19 @@
                 type = docs.FirstOrDefault().GetType();
             }
 
-            var fields = new List<string>();
-            foreach (var field in type.GetProperties())
+            if (type != null)
             {
-                fields.Add(field.Name);
-            }
 
-            <p>@title</p>
-            <div id="var-table"></div>
-            <script>
+                var fields = new List<string>();
+
+                foreach (var field in type.GetProperties())
+                {
+                    fields.Add(field.Name);
+                }
+
+                <p>@title</p>
+                <div id="var-table"></div>
+                <script>
                 var datas = [
                     @foreach (var el in data)
                     {
@@ -156,7 +160,8 @@
                         </text>
                     }
                 });
-            </script>
+                </script>
+            }
         }
     </div>
 </div>
