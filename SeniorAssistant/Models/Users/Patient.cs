@@ -7,12 +7,13 @@ namespace SeniorAssistant.Models.Users
         [Column(IsPrimaryKey = true, CanBeNull = false)]
         public string Username { get; set; }
 
-        [Association(ThisKey = "Username", OtherKey = nameof(User.Username), CanBeNull = false)]
-        public User UserData { get; set; }
-
         [NotNull]
         public string Doctor { get; set; }
 
         public string Notes { get; set; }
+
+        public int MaxHeart { get; set; }
+
+        public int MinHeart { get; set; }
     }
 }

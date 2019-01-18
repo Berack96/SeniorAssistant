@@ -2,10 +2,12 @@
 @using Microsoft.Extensions.Options
 @inject IOptions<SeniorAssistant.Configuration.Kendo> Kendo
 @inject IOptions<SeniorAssistant.Configuration.Theme> Theme
+@inject IHttpContextAccessor HttpContextAccessor
 
 @{
     var kendo = Kendo.Value;
     var theme = Theme.Value;
+    var logged = HttpContextAccessor.HttpContext.Session.GetString("username") != null;
 }
 
 <!DOCTYPE html>
@@ -46,27 +48,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <script src="~/kendo/@(kendo.Version)/js/jquery.min.js"></script>
     <script src="~/kendo/@(kendo.Version)/js/kendo.all.min.js"></script>
 </head>
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition @(theme.Skin.GetDescription()) @(theme.Layout.GetDescription())">
+
+<body class="hold-transition @(theme.Skin.GetDescription()) @(!logged?theme.Layout.GetDescription():"")">
     <div class="wrapper">
         <!-- Main Header -->
         <header class="main-header">
@@ -80,9 +63,14 @@ desired effect
             <!-- Header Navbar -->
             <nav class="navbar navbar-static-top" role="navigation">
                 <!-- Sidebar toggle button-->
-                <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-                    <span class="sr-only">Toggle navigation</span>
-                </a>
+                @if (logged)
+                {
+                    <text>
+                    <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+                        <span class="sr-only">Toggle navigation</span>
+                    </a>
+                    </text>
+                }
                 <!-- Navbar Right Menu -->
                 <div>
                     @{ await Html.RenderPartialAsync("NavbarRightMenu"); }
@@ -90,30 +78,7 @@ desired effect
             </nav>
         </header>
         <!-- Left side column. contains the logo and sidebar -->
-        <aside class="main-sidebar">
-            <!-- sidebar: style can be found in sidebar.less -->
-            <section class="sidebar">
-                <!-- Sidebar user panel (optional) -->
-                <!-- search form (Optional) -->
-                <form action="#" method="get" class="sidebar-form">
-                    <div class="input-group">
-                        <input type="text" name="q" class="form-control" placeholder="Search...">
-                        <span class="input-group-btn">
-                            <button type="submit" name="search" id="search-btn" class="btn btn-flat">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </span>
-                    </div>
-                </form>
-                <!-- /.search form -->
-                <!-- Sidebar Menu -->
-                <div>
-                    @{ await Html.RenderPartialAsync("SidebarMenu"); }
-                </div>
-                <!-- /.sidebar-menu -->
-            </section>
-            <!-- /.sidebar -->
-        </aside>
+        @{ await Html.RenderPartialAsync("SidebarMenu"); }
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
             <!-- Content Header (Page header) -->

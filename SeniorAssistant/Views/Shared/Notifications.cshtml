@@ -3,28 +3,9 @@
 
 @{
     var db = dbFactory.Create();
-    var notifications = (from n in db.Notifications
-                         where n.Username.Equals(Model) && n.Seen == false
-                         orderby n.Time
-                         select n).ToArray();
-    var num = notifications.Length;
+    var num = 0;
+    var notifications = db.GetLastMessages(db.Notifications, Model, ref num);
 }
-
-<!--
-<script>
-    $(document).ready(
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "/Account/_notification",
-            data: { Username: "@Model", Message: "stronzo" },
-            success: function (data) {
-                console.log(data);
-            }
-        })
-    );
-</script>
--->
 
 <a id="id-notification-toggle" href="#" class="dropdown-toggle" data-toggle="dropdown">
     <i class="fa fa-bell-o"></i>
@@ -33,50 +14,48 @@
         <span class="label label-warning">@num</span>
     }
 </a>
-@if (num != 0)
-{
-    <ul id="id-notification-drop" class="dropdown-menu">
-        <li class="header">You have @num notifications</li>
-        <li>
-            <!-- Inner Menu: contains the notifications -->
-            <ul class="menu">
-                @foreach (var notification in notifications)
+<ul id="id-notification-drop" class="dropdown-menu" style="box-shadow: black 0px 0px 2px">
+    <li class="header">Hai @num nuove notifiche</li>
+    <li>
+        <!-- Inner Menu: contains the notifications -->
+        <ul class="menu">
+            @foreach (var notification in notifications)
+            {
+                if (notification != null)
                 {
                     <li>
                         <!-- start notification -->
-                        <a id="notification-@notification.Id" href="#">
+                        <a id="notification-@notification.Id" class="@if (notification.Seen != default) {<text>bg-gray</text>}" href="@notification.Url">
                             <i class="fa fa-users text-aqua">@notification.Time</i><br />
-                            @notification.Message
+                            @notification.Body
                         </a>
                     </li>
                     <!-- end notification -->
                 }
-            </ul>
-        </li>
-        <!-- <li class="footer"><a href="#">View all</a></li> -->
-    </ul>
+            }
+        </ul>
+    </li>
+    <!-- <li class="footer"><a href="#">View all</a></li> -->
+</ul>
 
-    <script>
-        var user = "@Model";
-        $("[id^='notification-']").on("click", function () {
-            var id = this.id.replace(/notification-/g, '');
-            var allId = this.id;
-            $.ajax({
-                type: "PUT",
-                dataType: "json",
-                url: "/Account/_notification",
-                data: { id: id },
-                success: function () {
-                    $("#" + allId).remove();
-                    var num = parseInt($("#id-notification-toggle span").html()) - 1;
-                    if (num == 0) {
-                        $("#id-notification-toggle span").remove();
-                        $("#id-notification-drop").remove();
-                    }
-                    else
-                        $("#id-notification-toggle span").html(num);
-                }
-            });
+<script>
+    var user = "@Model";
+    $("[id^='notification-']").on("click", function () {
+        var id = this.id.replace(/notification-/g, '');
+        var allId = this.id;
+        $.ajax({
+            type: "PUT",
+            dataType: "json",
+            url: "/Account/_notification",
+            data: { id: id },
+            success: function () {
+                $("#" + allId).addClass("bg-gray");
+                var num = parseInt($("#id-notification-toggle span").html()) - 1;
+                if (num == 0)
+                    $("#id-notification-toggle span").remove();
+                else
+                    $("#id-notification-toggle span").html(num);
+            }
         });
-    </script>
-}
+    });
+</script>

@@ -13,7 +13,7 @@ namespace SeniorAssistant.Controllers.Services
         [HttpGet("{username}")]
         public async Task<IActionResult> Read(string username)
         {
-            return LoggedAccessDataOf(username, () =>
+            return await LoggedAccessDataOf(username, true, () =>
             {
                 return Json(Db.GetTable<TEntity>().Where((u) => u.Username.Equals(username)).ToArray());
             });
@@ -22,12 +22,12 @@ namespace SeniorAssistant.Controllers.Services
         [HttpPut("{username}")]
         public async Task<IActionResult> Update(string username, [FromBody] TEntity entity)
         {
-            return LoggedAccessDataOf(username, () =>
+            return await LoggedAccessDataOf(username, false, () =>
             {
                 entity.Username = username;
                 Db.Update(entity);
                 return Json(OkJson);
-            }, false);
+            });
         }
     }
 }

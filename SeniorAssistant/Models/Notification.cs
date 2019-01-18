@@ -3,7 +3,7 @@ using System;
 
 namespace SeniorAssistant.Models
 {
-    public class Notification : IHasTime
+    public class Notification : IHasMessage
     {
         [Column(IsPrimaryKey = true, CanBeNull = false, IsIdentity = true)]
         public int Id { get; set; }
@@ -13,9 +13,14 @@ namespace SeniorAssistant.Models
 
         [NotNull]
         public DateTime Time { get; set; }
-        
-        public bool Seen { get; set; }
-        
-        public string Message { get; set; }
+
+        [NotNull]
+        public string Receiver { get; set; }
+
+        public string Body { get; set; }
+
+        public string Url { get; set; }
+
+        public DateTime Seen { get; set; }
     }
 }

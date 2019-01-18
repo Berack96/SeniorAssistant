@@ -1,0 +1,184 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IDataContextFactory<SeniorDataContext> dbFactory
+@model User
+
+@{
+    ViewBag.Title = "Hello Razor";
+    var session = HttpContextAccessor.HttpContext.Session;
+    var username = session.GetString("username");
+
+    bool auth = username.Equals(Model.Username);
+    bool isDoc = session.GetString("role").Equals("doctor");
+    Patient patient = null;
+    if (isDoc)
+    {
+        var db = dbFactory.Create();
+        patient = (from p in db.Patients
+                   where p.Username.Equals(Model.Username) && p.Doctor.Equals(username)
+                   select p).ToArray().FirstOrDefault();
+        auth = auth || patient != null;
+    }
+}
+
+@if (!auth)
+{
+    <p class="box-title text-red">Non sei autorizzato a vedere i dati di @Model.Name @Model.LastName</p>
+}
+else
+{
+    <div>
+        <input id="hours-data" type="text" placeholder="hours" value="24" />
+        <button id="refresh-hours" class="fc-button">Cambia ora</button>
+        <div id="chart-data"></div>
+    </div>
+    @if (isDoc && patient != null)
+    {
+        <div>
+            <textarea id="note-area" placeholder="Scrivi una nota..">@patient.Notes</textarea>
+            <button id="send-note" class="btn">Salva</button>
+            <p id="note-error"></p>
+        </div>
+        <a class="" href="/Message/@patient.Username">Invia un messaggio al tuo paziente</a>
+        <div>
+            <p>Inserisci un minimo o massimo valore per il battito cardiaco</p>
+            <p>Se il valore del battito del paziente supera i valori che hai inserito verrai notificato</p>
+            <label>Max:</label>
+            <input id="maxHeart" placeholder="max" value="@patient.MaxHeart" />
+            <label>Min:</label>
+            <input id="minHeart" placeholder="min" value="@patient.MinHeart" />
+        </div>
+        <script>
+            $("#send-note").on("click", function () {
+                var text = $("#note-area").val().trim();
+                $.ajax({
+                    url: "/Account/_addNote",
+                    type: "PUT",
+                    data: {
+                        Patient: "@Model.Username", Text: text
+                    },
+                    success: function (data) {
+                        $("#note-error").html(data.success ? "Nota salvata" : data.message);
+                    }
+                });
+            });
+            $("#maxHeart, #minHeart").on("change keyup paste click", function () {
+                onlyNum($(this));
+            });
+            $("#maxHeart, #minHeart").on("blur", function () {
+                var value = parseInt($(this).val());
+                var id = $(this).attr("id");
+                $.ajax({
+                    url: "/Account/_" + id + "ToPatient",
+                    type: "PUT",
+                    data: {
+                        Patient: "@Model.Username",
+                        Value: value
+                    }
+                });
+            });
+        </script>
+    }
+
+    <script>
+        function onlyNum(object, numChar = 3) {
+            object.val(object.val().replace(/[^0-9]/g, '').substring(0, numChar));
+        }
+
+        $("#hours-data").on("change keyup paste click", function () {
+            onlyNum($(this), 2);
+        });
+        $("#refresh-hours").on("click", function () {
+            var hours = $("#hours-data").val();
+            var base_url = "@Url.Content("~/api/")";
+            var end_url = "/@Model.Username/last/" + hours;
+
+            $.getJSON(base_url + "heartbeat" + end_url, function (heartbeat) {
+                $.getJSON(base_url + "step" + end_url, function (steps) {
+                    $.getJSON(base_url + "sleep" + end_url, function (sleep) {
+                        var sleepArr = [];
+
+                        sleep.forEach(function (el) {
+                            sleepArr.push({ "time": el.time, "value": 1 });
+                            var base_time = new Date(el.time).getTime();
+
+                            for (var i = 60000; i <= el.value; i += 60000) {
+                                sleepArr.push({ "time": new Date(base_time + i), "value": 1 });
+                            }
+                        });
+
+                        if (Object.keys(heartbeat).length == 0
+                            && Object.keys(steps).length == 0
+                            && Object.keys(sleep).length == 0)
+                            $("#chart-data").html("Nessun dato");
+                        else
+                            $("#chart-data").kendoChart({
+                                title: { text: "Visualizzazione attivita' di @Model.Name @Model.LastName" },
+                                legend: { position: "bottom" },
+                                seriesDefaults: {
+                                    type: "line",
+                                    style: "smooth"
+                                },
+                                series: [{
+                                    name: "Battito",
+                                    field: "value",
+                                    color: "red",
+                                    axis: "Heartbeat",
+                                    categoryField: "time",
+                                    data: heartbeat,
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}%",
+                                        template: "Media di: #= value # bpm"
+                                    }
+                                }, {
+                                    name: "Passi",
+                                    field: "value",
+                                    color: "blue",
+                                    axis: "Steps",
+                                    categoryField: "time",
+                                    data: steps,
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}%",
+                                        template: "#= series.name #: #= value #"
+                                    }
+                                }, {
+                                    type: "area",
+                                    name: "Sonno",
+                                    field: "value",
+                                    color: "black",
+                                    axis: "Sleep",
+                                    categoryField: "time",
+                                    data: sleepArr
+                                }],
+                                categoryAxis: {
+                                    labels: {
+                                        rotation: +45,
+                                        dateFormats: {
+                                            hours: "HH:mm"
+                                        }
+                                    },
+                                    type: "Date",
+                                    baseUnit: "hours"
+                                },
+                                valueAxes: [{
+                                    name: "Heartbeat",
+                                    color: "red"
+                                }, {
+                                    name: "Steps",
+                                    color: "blue"
+                                }, {
+                                    name: "Sleep",
+                                    color: "gray",
+                                    visible: false,
+                                    max: 1,
+                                    min: 0
+                                }]
+                            }); /* Kendo */
+                    }); /* sleep */
+                }); /* steps */
+            }); /* heart */
+        }); /* click */
+        $("#refresh-hours").click();
+    </script>
+}

@@ -1,7 +1,7 @@
 ﻿using LinqToDB.Mapping;
 using System;
 
-namespace SeniorAssistant.Models
+namespace SeniorAssistant.Models.Data
 {
     public class Step : IHasTime
     {
