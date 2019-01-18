@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SeniorAssistant.Models;
+using SeniorAssistant.Models.Data;
 using SeniorAssistant.Models.Users;
 
 namespace SeniorAssistant.Controllers.Services

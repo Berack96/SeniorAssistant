@@ -4,50 +4,9 @@
 @{
     var db = dbFactory.Create();
     var maxMessage = 10;
-    var notSeen = (from n in db.Messages
-                   where n.Reciver.Equals(Model) && n.Seen == false
-                   orderby n.Time descending
-                   select n).Take(maxMessage).ToArray();
-
-    var messages = new Message[maxMessage];
-    var num = notSeen.Length;
-
-    int i;
-    for (i=0; i<num; i++)
-    {
-        messages[i] = notSeen[i];
-    }
-
-    if (num < maxMessage)
-    {
-        var messSeen = (from n in db.Messages
-                        where n.Reciver.Equals(Model) && n.Seen == true
-                        orderby n.Time descending
-                        select n).Take(maxMessage-num).ToArray();
-
-        foreach(var m in messSeen)
-        {
-            messages[i] = m;
-            i++;
-        }
-    }
+    var num = 0;
+    var messages = db.GetLastMessages(db.Messages, Model, ref num, maxMessage);
 }
-
-<!--
-<script>
-    $(document).ready(
-        $.ajax({
-            type: "POST",
-            dataType: "json",
-            url: "/Account/_message",
-            data: { Username: "@Model", Message: "stronzo" },
-            success: function (data) {
-                console.log(data);
-            }
-        })
-    );
-</script>
--->
 
 <a id="id-message-toggle" href="#" class="dropdown-toggle" data-toggle="dropdown">
     <i class="fa fa-envelope-o"></i>
@@ -64,8 +23,8 @@
 </a>
 @if (messages.Length != 0)
 {
-    <ul id="id-message-drop" class="dropdown-menu">
-        <li class="header">You have @num unread message</li>
+    <ul id="id-message-drop" class="dropdown-menu" style="box-shadow: black 0px 0px 2px">
+        <li class="header">Hai @num messaggi non letti</li>
         <li>
             <!-- Inner Menu: contains the messages -->
             <ul class="menu">
@@ -75,7 +34,7 @@
                     {
                         <li>
                             <!-- start notification -->
-                            <a id="message-@message.Id" @if(message.Seen) {<text>class= "bg-gray"</text>} href="/Message/@message.Id">
+                            <a id="message-@message.Id" @if(message.Seen != default) {<text>class= "bg-gray"</text>} href="/Message/@message.Username">
                                 <i class="fa text-lime">@message.Time</i><br />
                                 @message.Body
                             </a>

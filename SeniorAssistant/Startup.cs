@@ -10,10 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 using SeniorAssistant.Configuration;
 using SeniorAssistant.Data;
 using SeniorAssistant.Models;
+using SeniorAssistant.Models.Data;
+using SeniorAssistant.Models.Users;
 using SeniorAssistant.Extensions;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SeniorAssistant.Models.Users;
 
 namespace SeniorAssistant
 {
@@ -71,21 +72,6 @@ namespace SeniorAssistant
 //                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IList<IMenuItem>>(new List<IMenuItem>
-            {
-                new MenuItem("Index", "/"),
-                new SubMenu()
-                {
-                    Text = "Raw Data",
-                    Items = new MenuItem[]
-                    {
-                        new MenuItem("Users", "/users"),
-                        new MenuItem("Heartbeat", "/heartbeat"),
-                        new MenuItem("Sleep", "/sleep"),
-                        new MenuItem("Step", "/step")
-                    }
-                }
-            });
 
             var dbFactory = new SeniorDataContextFactory(
                 dataProvider: SQLiteTools.GetDataProvider(),
@@ -131,7 +117,7 @@ namespace SeniorAssistant
             
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Oops, something went wrong");
+                await context.Response.WriteAsync("Oops, this page doesn't exist");
             });
         }
 

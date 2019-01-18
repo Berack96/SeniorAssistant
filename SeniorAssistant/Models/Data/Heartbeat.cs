@@ -1,7 +1,7 @@
 ﻿using LinqToDB.Mapping;
 using System;
 
-namespace SeniorAssistant.Models
+namespace SeniorAssistant.Models.Data
 {
     public class Heartbeat : IHasTime
     {
@@ -14,10 +14,5 @@ namespace SeniorAssistant.Models
         public DateTime Time { get; set; }
 
         public double Value { get; set; }
-
-        /*
-        [Association(ThisKey = nameof(Username), OtherKey = nameof(User.Username), CanBeNull = false)]
-        public User UserObj { get; set; }
-        */
     }
 }

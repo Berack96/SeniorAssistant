@@ -1,8 +1,10 @@
 ﻿using LinqToDB;
 using Microsoft.AspNetCore.Mvc;
+using SeniorAssistant.Models.Data;
 using SeniorAssistant.Models;
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SeniorAssistant.Controllers.Services
@@ -11,6 +13,7 @@ namespace SeniorAssistant.Controllers.Services
         where TEntity : class, IHasTime
     {
         private static readonly string DateNotCorrect = "Il formato della data non e' corretto";
+        private static readonly string AnomalDataHear = "Valore dei battiti cardiaci anomalo";
 
         [HttpGet("{username}/{date:regex((today|\\d{{4}}-\\d{{2}}-\\d{{2}}))}/{hour:range(0, 23)?}")]
         public async Task<IActionResult> Read(string username, string date, int hour = -1) => await Read(username, date, date, hour);
@@ -18,7 +21,7 @@ namespace SeniorAssistant.Controllers.Services
         [HttpGet("{username}/{from:regex((today|\\d{{4}}-\\d{{2}}-\\d{{2}}))}/{to:regex((today|\\d{{4}}-\\d{{2}}-\\d{{2}}))}/{hour:range(0, 23)?}")]
         public async Task<IActionResult> Read(string username, string from, string to, int hour = -1)
         {
-            return LoggedAccessDataOf(username, () =>
+            return await LoggedAccessDataOf(username, true, () =>
             {
                 try
                 {
@@ -42,7 +45,7 @@ namespace SeniorAssistant.Controllers.Services
         [HttpGet("{username}/last/{hour:min(1)}")]
         public async Task<IActionResult> Read(string username, int hour)
         {
-            return LoggedAccessDataOf(username, () =>
+            return await LoggedAccessDataOf(username, true, () =>
             {
                 DateTime date = DateTime.Now.AddHours(-hour);
                 return Json((from entity in Db.GetTable<TEntity>()
@@ -53,24 +56,42 @@ namespace SeniorAssistant.Controllers.Services
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]TEntity item)
+        public async Task<IActionResult> Create(TEntity item)
         {
-            return Action(() =>
+            return await LoggedAccessDataOf(item.Username, false, () =>
             {
                 Db.Insert(item);
+
+                if (item is Heartbeat temp)
+                {
+                    var result = (from p in Db.Patients
+                                  where p.Username.Equals(item.Username)
+                                  select p).ToArray().FirstOrDefault();
+                    if (result.MinHeart > temp.Value || result.MaxHeart < temp.Value)
+                    {
+                        var date = WebUtility.UrlEncode(item.Time.ToString("yyyy/MM/dd"));
+                        Db.Insert(new Notification() {
+                            Username = item.Username,
+                            Receiver = result.Doctor,
+                            Body = item.Username + ":" + AnomalDataHear,
+                            Url = "/user/" + item.Username + "?from=" + date + "&to=" + date,
+                            Time = DateTime.Now
+                        });
+                    }
+                }
+
                 return Json(OkJson);
             });
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody]TEntity item)
+        public async Task<IActionResult> Update(TEntity item)
         {
-            return LoggedAccessDataOf(item.Username, () =>
+            return await LoggedAccessDataOf(item.Username, false, () =>
             {
-                var e = Read(item.Username, item.Time);
-                if (e == null)
+                if (Read(item.Username, item.Time) == null)
                 {
-                    Create(item);
+                    var a = Create(item);
                 }
                 else
                 {
@@ -78,7 +99,7 @@ namespace SeniorAssistant.Controllers.Services
                 }
 
                 return Json(OkJson);
-            }, false);
+            });
         }
 
         [NonAction]

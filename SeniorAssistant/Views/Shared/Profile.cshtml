@@ -30,37 +30,8 @@
             <p class="text-bold">Dottore: @doctor.Name @doctor.LastName</p>
             <p class="text-fuchsia">Dove mi puoi trovare? @doctor.Location</p>
             <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@patientData.Notes</textarea>
-
-            <div id="send-doc-message">
-                <p>Invia un messaggio al tuo dottore</p>
-                <textarea id="doc-message" class="progress-text" placeholder="scrivi qui"></textarea>
-                <button id="btn-send-message">Invia</button>
-                <p id="message-error" class="text-red"></p>
-
-                <script>
-                    $("#btn-send-message").on("click", function () {
-                        var body = $("#doc-message").val().trim();
-                        var endMessage = $("#message-error");
-                        if (body.length < 20) {
-                            endMessage.html("Messaggio non valido (minimo 20 caratteri)");
-                            return false;
-                        }
-
-                        $.ajax({
-                            url: "Account/_sendMessage",
-                            type: "POST",
-                            data: {
-                                Reciver: "@doctor.Username",
-                                Body: body
-                            },
-                            success: function () {
-                                $("#doc-message").val("");
-                                endMessage.html("Messaggio inviato");
-                            }
-                        });
-                    });
-                </script>
-            </div>
+            
+            <a class="" href="/Message/@doctor.Username">Invia un messaggio al tuo dottore</a>
         }
         else
         {

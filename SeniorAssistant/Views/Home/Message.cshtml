@@ -1,4 +1,4 @@
-﻿@model int
+﻿@model string
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IDataContextFactory<SeniorDataContext> dbFactory
 @using LinqToDB;
@@ -7,24 +7,81 @@
     ViewBag.Title = "Hello Razor";
     string username = HttpContextAccessor.HttpContext.Session.GetString("username");
     var db = dbFactory.Create();
-    var message = (from m in db.Messages
-                    where m.Id.Equals(Model) && m.Reciver.Equals(username)
-                    select m).ToArray().FirstOrDefault();
+    var user = (from u in db.Users
+                where u.Username.Equals(Model)
+                select u).FirstOrDefault();
+    var messages = (from m in db.Messages
+                    where (m.Username.Equals(Model) && m.Receiver.Equals(username))
+                        ||(m.Receiver.Equals(Model) && m.Username.Equals(username))
+                    orderby m.Time ascending
+                    select m).ToArray();
 }
 
 <div class="content">
-    @if (message == null)
+    @if (messages.Count() == 0)
     {
-        <p class="text-red">Non hai il permesso</p>
+        <p class="text-red">Non hai messaggi</p>
     }
     else
     {
-        message.Seen = true;
-        db.Update(message);
-        <p>Messaggio da @message.Username</p>
-        <p>Inviato il @message.Time</p>
-        <div class="info-box-text">
-            @message.Body
-        </div>
+        <h3 class="text-bold">Messaggi con @user.Name @user.LastName</h3>
+
+        foreach (var message in messages)
+        {
+            if (message.Seen == default && message.Receiver.Equals(username))
+            {
+                message.Seen = DateTime.Now;
+                db.Update(message);
+            }
+            <div>
+                @if (message.Receiver.Equals(username))
+                {
+                    <div class="pull-left"></div>
+                    <div class="pull-right-container bg-light-blue">
+                        <span style="white-space: pre-line" class="">@message.Body</span>
+                        <p class="text-aqua">@message.Seen</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="pull-right-container bg-green-gradient">
+                        <div style="white-space: pre-line" class="">@message.Body</div>
+                        <p class="text-aqua">@message.Seen</p>
+                    </div>
+                    <div class="pull-right"></div>
+                }
+            </div>
+        }
     }
+    <div class="pull-right">
+        <textarea id="res-message" class="progress-text" placeholder="Scrivi qui per scrivere un messaggio"></textarea>
+        <button id="btn-send-message">Invia</button>
+        <p id="message-error" class="text-red"></p>
+    </div>
+    <script>
+        $("#btn-send-message").on("click", function () {
+            var min = 10;
+            var body = $("#res-message").val().trim();
+            var endMessage = $("#message-error");
+            if (body.length < min) {
+                endMessage.html("Messaggio non valido (minimo " + min + " caratteri)");
+                return false;
+            }
+
+            $.ajax({
+                url: "/Account/_sendMessage",
+                type: "POST",
+                data: {
+                    Receiver: "@Model",
+                    Body: body
+                },
+                success: function (data) {
+                    console.log(data);
+                    $("#res-message").val("");
+                    endMessage.html("Messaggio inviato");
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
 </div>

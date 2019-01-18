@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace SeniorAssistant.Controllers
 {
@@ -16,19 +17,19 @@ namespace SeniorAssistant.Controllers
         [Route("Heartbeat")]
         public IActionResult Heartbeat()
         {
-            return CheckAuthorized("Heartbeat");
+            return CheckAuthorized("Data", "Heartbeat");
         }
 
         [Route("Sleep")]
         public IActionResult Sleep()
         {
-            return CheckAuthorized("Sleep");
+            return CheckAuthorized("Data", "Sleep");
         }
 
         [Route("Step")]
         public IActionResult Step()
         {
-            return CheckAuthorized("Step");
+            return CheckAuthorized("Data", "Step");
         }
 
         [Route("Users")]
@@ -40,13 +41,16 @@ namespace SeniorAssistant.Controllers
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
-            return CheckAuthorized("Data", user);
+            var u = (from us in Db.Users
+                     where us.Username.Equals(user)
+                     select us).FirstOrDefault();
+            return CheckAuthorized("User", u);
         }
 
-        [Route("Message/{Id}")]
-        public IActionResult Message(int id)
+        [Route("Message/{User}")]
+        public IActionResult Message(string user)
         {
-            return CheckAuthorized("Message", id);
+            return CheckAuthorized("Message", user);
         }
 
         private IActionResult CheckAuthorized(string view, object model = null)
