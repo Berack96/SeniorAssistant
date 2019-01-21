@@ -11,11 +11,11 @@
 
 <script>
     $("#login-btn").on("click", function () {
-        var userName = $("#username").val();
+        var username = $("#username").val();
         var password = $("#password").val();
         $.ajax({
             url: "/Account/_login",
-            data: { UserName: userName, Password: password, RememberMe: false },
+            data: { Username: username, Password: password },
             dataType: "json",
             type: "POST",
             success: function (data) {
@@ -27,9 +27,6 @@
                     $("#user-menu").addClass("open");
                 }
                 return false;
-            },
-            error: function (xhr, status, error) {
-                alert(xhr.status+" "+xhr.responseText)
             }
         })
     });

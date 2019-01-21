@@ -6,10 +6,10 @@ using LinqToDB;
 using System.Linq;
 using System;
 using SeniorAssistant.Models.Users;
-using SeniorAssistant.Data;
 using System.Threading.Tasks;
-using System.Web;
 using System.IO;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace IdentityDemo.Controllers
 {
@@ -25,35 +25,48 @@ namespace IdentityDemo.Controllers
         private static readonly string AlreadyPatie = "Sei gia' un paziente";
         private static readonly string DocNotExists = "Il dottore selezionato non esiste";
         private static readonly string InsertAsDoct = "Ti ha inserito come il suo dottore: ";
+        private static readonly string DefaultImage = "/uploads/default.jpg";
+        private static readonly string UploadsDirec = "/uploads/";
 
         [HttpPost]
         public async Task<ActionResult> _login(string username, string password)
         {
-            var result = await (from u in Db.Users
-                                where u.Username.Equals(username)
-                                && u.Password.Equals(password)
-                                select u).ToListAsync();
-
-            if (result.Count == 1)
+            try
             {
-                User user = result.First();
-                HttpContext.Session.SetString(Username, username);
-                HttpContext.Session.SetString("email", user.Email);
-                HttpContext.Session.SetString("name", user.Name);
-                HttpContext.Session.SetString("lastname", user.LastName);
-                    
-                var isDoc = (from d in Db.Doctors
-                             where d.Username.Equals(username)
-                             select d).ToArray().FirstOrDefault() != null;
-                HttpContext.Session.SetString("role", isDoc? "doctor":"patient");
+                var user = await (from u in Db.Users
+                                  where u.Username.Equals(username)
+                                  && u.Password.Equals(password)
+                                  select u).FirstOrDefaultAsync();
 
-                return Json(OkJson);
+                if (user != null)
+                {
+                    HttpContext.Session.SetString(Username, username);
+                    HttpContext.Session.SetString("email", user.Email);
+                    HttpContext.Session.SetString("name", user.Name);
+                    HttpContext.Session.SetString("lastname", user.LastName);
+                    HttpContext.Session.SetString("avatar", user.Avatar ?? DefaultImage);
+
+                    var isDoc = (from d in Db.Doctors
+                                 where d.Username.Equals(username)
+                                 select d).ToArray().FirstOrDefault() != null;
+                    HttpContext.Session.SetString("role", isDoc ? "doctor" : "patient");
+
+                    return Json(OkJson);
+                }
+                return Json(new JsonResponse()
+                {
+                    Success = false,
+                    Message = InvalidLogIn
+                });
             }
-            return Json(new JsonResponse()
+            catch (Exception e)
             {
-                Success = false,
-                Message = InvalidLogIn
-            });
+                return Json(new JsonResponse()
+                {
+                    Success = false,
+                    Message = e.Message + " " +e.Source + "</br>"+ e.StackTrace
+                });
+            }
         }
 
         [HttpPost]
@@ -68,6 +81,7 @@ namespace IdentityDemo.Controllers
         {
             try
             {
+                user.Avatar = DefaultImage;
                 Db.Insert(user);
                 if (code != null && code.Equals("444442220"))
                 {
@@ -218,18 +232,51 @@ namespace IdentityDemo.Controllers
                 return Json(OkJson);
             });
         }
-
         
         [HttpPost]
-        public async Task<ActionResult> _save(IFormFile file)
+        public async Task<ActionResult> _save(IEnumerable<IFormFile> files)
         {
-            return LoggedAction(() =>
+            return await LoggedAction(() =>
             {
-                var loggedUser = HttpContext.Session.GetString(Username);
+                if (files != null)
+                {
+                    var loggedUser = HttpContext.Session.GetString(Username);
+                    foreach (var file in files)
+                    {
+                        var fileContent = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
+                        
+                        // We are only interested in the file name.
+                        var fileName = loggedUser + Path.GetExtension(fileContent.FileName.ToString().Trim('"'));
+
+                        var physicalPath = "wwwroot" + UploadsDirec;
+                        Directory.CreateDirectory(physicalPath);
+
+                        physicalPath = Path.Combine(physicalPath, fileName);
+                        var externalPath = Path.Combine(UploadsDirec, fileName);
+                        
+                        using (var fileStream = new FileStream(physicalPath, FileMode.Create))
+                        {
+                            file.CopyTo(fileStream);
+                        }
+
+                        var user = (from u in Db.Users
+                                    where u.Username.Equals(loggedUser)
+                                    select u).FirstOrDefault();
+                        user.Avatar = externalPath;
+                        HttpContext.Session.SetString("avatar", externalPath);
+                        Db.Update(user);
+                    }
+                }
+
+                return Json(OkJson);
+                /*
+                
                 if (file.Length > 0)
                 {
+                    var fileContent = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
+
                     var name = loggedUser + ".jpg";
-                    var path = Path.Combine(("~/uploads/"), name);
+                    var path = Path.Combine(("/uploads/"), name);
                     var stream = new FileStream(path, FileMode.Create);
                     file.CopyTo(stream);
                     var user = (from u in Db.Users
@@ -261,6 +308,7 @@ namespace IdentityDemo.Controllers
             }
             return Json(new JsonResponse());
             */
+            });
         }
     }
 }

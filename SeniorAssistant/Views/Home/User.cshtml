@@ -6,6 +6,7 @@
     ViewBag.Title = "Hello Razor";
     var session = HttpContextAccessor.HttpContext.Session;
     var username = session.GetString("username");
+    bool filter = HttpContextAccessor.HttpContext.Request.Query["from"] != (String)null;
 
     bool auth = username.Equals(Model.Username);
     bool isDoc = session.GetString("role").Equals("doctor");
@@ -29,6 +30,14 @@ else
     <div>
         <input id="hours-data" type="text" placeholder="hours" value="24" />
         <button id="refresh-hours" class="fc-button">Cambia ora</button>
+
+        <input id="date-from" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["from"]" />
+        <input id="date-to" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["to"]" />
+        <button id="refresh-date" class="fc-button">Cambia data</button>
+
+        <label>Mostra dati sottoforma tabella</label>
+        <input type="checkbox" id="show-table"/>
+
         <div id="chart-data"></div>
     </div>
     @if (isDoc && patient != null)
@@ -89,9 +98,20 @@ else
         });
         $("#refresh-hours").on("click", function () {
             var hours = $("#hours-data").val();
-            var base_url = "@Url.Content("~/api/")";
             var end_url = "/@Model.Username/last/" + hours;
+            kendoUpdate(end_url);
+        });
+        $("#refresh-date").on("click", function () {
+            var from = $("#date-from").val();
+            var to = $("#date-to").val();
+            var end_url = "/@Model.Username/"+from+"/"+to;
+            kendoUpdate(end_url);
+        });
 
+        var toRefresh = "@if (filter) { @Html.Raw("#refresh-date") } else { @Html.Raw("#refresh-hours") }";
+        $(toRefresh).click();
+
+        function kendoUpdate(end_url, base_url = "@Url.Content("~/api/")") {
             $.getJSON(base_url + "heartbeat" + end_url, function (heartbeat) {
                 $.getJSON(base_url + "step" + end_url, function (steps) {
                     $.getJSON(base_url + "sleep" + end_url, function (sleep) {
@@ -110,7 +130,9 @@ else
                             && Object.keys(steps).length == 0
                             && Object.keys(sleep).length == 0)
                             $("#chart-data").html("Nessun dato");
-                        else
+                        else {
+                            /* se checked #show-table allora crea dati come data.cshtml */
+                            /**/
                             $("#chart-data").kendoChart({
                                 title: { text: "Visualizzazione attivita' di @Model.Name @Model.LastName" },
                                 legend: { position: "bottom" },
@@ -175,10 +197,10 @@ else
                                     min: 0
                                 }]
                             }); /* Kendo */
+                        } /* else */
                     }); /* sleep */
                 }); /* steps */
             }); /* heart */
-        }); /* click */
-        $("#refresh-hours").click();
+        }
     </script>
 }
