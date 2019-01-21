@@ -5,7 +5,7 @@ logo sito
     disattivare l-aside e le opzioni
 se non loggato deve tornare qua
 -->
-@model string
+@model object
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
@@ -16,7 +16,7 @@ se non loggato deve tornare qua
 <div class="content">
     @if (session == null)
     {
-        @if (Model != null)
+        @if (Model is string)
         {
             <p class="text-red box-title">Per poter accedere alla pagina [@Model] e' necessario essere loggati</p>
         }
@@ -31,6 +31,6 @@ se non loggato deve tornare qua
     }
     else
     {
-        await Html.RenderPartialAsync("Profile"); // magari sostituire qui
+        await Html.RenderPartialAsync("Profile", Model); // magari sostituire qui
     }
 </div>

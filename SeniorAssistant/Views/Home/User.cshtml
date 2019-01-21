@@ -8,16 +8,8 @@
     var username = session.GetString("username");
 
     bool auth = username.Equals(Model.Username);
-    bool isDoc = session.GetString("role").Equals("doctor");
-    Patient patient = null;
-    if (isDoc)
-    {
-        var db = dbFactory.Create();
-        patient = (from p in db.Patients
-                   where p.Username.Equals(Model.Username) && p.Doctor.Equals(username)
-                   select p).ToArray().FirstOrDefault();
-        auth = auth || patient != null;
-    }
+    bool isDoc = Model.IsPatient() && username.Equals(Model.Pat.Doctor);
+    auth = auth || isDoc;
 }
 
 @if (!auth)
@@ -31,21 +23,21 @@ else
         <button id="refresh-hours" class="fc-button">Cambia ora</button>
         <div id="chart-data"></div>
     </div>
-    @if (isDoc && patient != null)
+    @if (isDoc)
     {
         <div>
-            <textarea id="note-area" placeholder="Scrivi una nota..">@patient.Notes</textarea>
+            <textarea id="note-area" placeholder="Scrivi una nota..">@Model.Pat.Notes</textarea>
             <button id="send-note" class="btn">Salva</button>
             <p id="note-error"></p>
         </div>
-        <a class="" href="/Message/@patient.Username">Invia un messaggio al tuo paziente</a>
+        <a class="" href="/Message/@Model.Pat.Username">Invia un messaggio al tuo paziente</a>
         <div>
             <p>Inserisci un minimo o massimo valore per il battito cardiaco</p>
             <p>Se il valore del battito del paziente supera i valori che hai inserito verrai notificato</p>
             <label>Max:</label>
-            <input id="maxHeart" placeholder="max" value="@patient.MaxHeart" />
+            <input id="maxHeart" placeholder="max" value="@Model.Pat.MaxHeart" />
             <label>Min:</label>
-            <input id="minHeart" placeholder="min" value="@patient.MinHeart" />
+            <input id="minHeart" placeholder="min" value="@Model.Pat.MinHeart" />
         </div>
         <script>
             $("#send-note").on("click", function () {

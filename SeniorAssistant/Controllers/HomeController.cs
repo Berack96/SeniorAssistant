@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LinqToDB;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using SeniorAssistant.Models;
 using System.Linq;
 
 namespace SeniorAssistant.Controllers
@@ -11,7 +14,8 @@ namespace SeniorAssistant.Controllers
         [Route("Index")]
         public IActionResult Index()
         {
-            return View();
+            string username = HttpContext.Session.GetString(Username);
+            return View("Index", GetUser(username));
         }
 
         [Route("Heartbeat")]
@@ -41,25 +45,28 @@ namespace SeniorAssistant.Controllers
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
-            var u = (from us in Db.Users
-                     where us.Username.Equals(user)
-                     select us).FirstOrDefault();
-            return CheckAuthorized("User", u);
+            return CheckAuthorized("User", GetUser(user));
         }
 
         [Route("Message/{User}")]
         public IActionResult Message(string user)
         {
-            return CheckAuthorized("Message", user);
+            return CheckAuthorized("Message", GetUser(user));
+        }
+
+        private User GetUser(string username)
+        {
+            return Db.Users
+                .LoadWith(u => u.Doc)
+                .LoadWith(u => u.Pat)
+                .Where(u => u.Username.Equals(username))
+                .FirstOrDefault();
         }
 
         private IActionResult CheckAuthorized(string view, object model = null)
         {
             if (!IsLogged())
-            {
-                model = "/" + view;
-                view = "Index";
-            }
+                return View("Index", "/" + view);
             return View(view, model);
         }
     }
