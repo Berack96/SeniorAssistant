@@ -36,9 +36,10 @@ else
         <button id="refresh-date" class="fc-button">Cambia data</button>
 
         <label>Mostra dati sottoforma tabella</label>
-        <input type="checkbox" id="show-table"/>
+        <input type="checkbox" id="show-table" />
 
         <div id="chart-data"></div>
+        <div id="grid"></div>
     </div>
     @if (isDoc && patient != null)
     {
@@ -125,14 +126,117 @@ else
                                 sleepArr.push({ "time": new Date(base_time + i), "value": 1 });
                             }
                         });
-
+                        
                         if (Object.keys(heartbeat).length == 0
                             && Object.keys(steps).length == 0
                             && Object.keys(sleep).length == 0)
                             $("#chart-data").html("Nessun dato");
                         else {
-                            /* se checked #show-table allora crea dati come data.cshtml */
-                            /**/
+                            /* se checked #show-table allora crea dati come data.cshtml for () {
+                                allData.push({"time"});
+                            }*/
+                            $("#chart-data").html("");
+                            console.log(heartbeat[0].time);
+                            console.log("min = " +new Date(heartbeat[0].time).getTime());
+                            var minDate = Math.min(
+                                new Date(heartbeat[0].time).getTime(),
+                                new Date(steps[0].time).getTime(),
+                                new Date(sleepArr[0].time).getTime()
+                            );
+
+                            var maxDate = Math.max(
+                                new Date(heartbeat[heartbeat.length-1].time).getTime(),
+                                new Date(steps[steps.length - 1].time).getTime(),
+                                new Date(sleepArr[sleepArr.length -1].time).getTime()
+                            );
+                            
+
+                            var allData = [];
+                            for (var delta = 60 * 60 * 1000; minDate < maxDate; minDate += delta) {
+                                var heartVal = NaN;
+                                for (var i = 0; i < heartbeat.length; i++) {
+                                    var time = new Date(heartbeat[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        heartVal = heartbeat[i].value;
+                                        i = heartbeat.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = heartbeat.length;
+                                }
+
+                                var stepVal = NaN;
+                                for (var i = 0; i < steps.length; i++) {
+                                    var time = new Date(steps[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        stepVal = steps[i].value;
+                                        i = steps.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = steps.length;
+                                }
+
+                                var sleepVal = false;
+                                for (var i = 0; i < sleepArr.length; i++) {
+                                    var time = new Date(sleepArr[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        sleepVal = true;
+                                        i = sleepArr.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = sleepArr.length;
+                                }
+
+                                allData.push({
+                                    "Time": new Date(minDate),
+                                    "Heartbeat": heartVal,
+                                    "Steps": stepVal,
+                                    "Sleep": sleepVal
+                                });
+                            }
+                            if (document.getElementById("show-table").checked) {
+                                $("#chart-data").kendoGrid({
+                                    dataSource: {
+                                        data: allData,
+                                        serverPaging: false,
+                                        serverSorting: false,
+                                        batch: false,
+                                        schema: {
+                                            model: {
+                                                fields: {
+                                                    time: { type: "date" },
+                                                    Heartbeat: { type: "number" },
+                                                    Steps: {type: "number"},
+                                                    Sleep: {type: "bool"}
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scrollable: true,
+                                    sortable: true,
+                                    filterable: true,
+                                    editable: false,
+                                    columns: [
+                                        {
+                                            field: "Time",
+                                            title: "Date/Time",
+                                            format: "{0:dd/MM/yyyy HH:mm}"
+                                        },
+                                        {
+                                            field: "Heartbeat",
+                                            title: "Battiti"
+                                        },
+                                        {
+                                            field: "Steps",
+                                            title: "Passi"
+                                        },
+                                        {
+                                            field: "Sleep",
+                                            title: "Sonno"
+                                        }
+                                    ]
+                                });
+                            }
+                            else
                             $("#chart-data").kendoChart({
                                 title: { text: "Visualizzazione attivita' di @Model.Name @Model.LastName" },
                                 legend: { position: "bottom" },

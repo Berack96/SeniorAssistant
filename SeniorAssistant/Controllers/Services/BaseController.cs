@@ -56,11 +56,7 @@ namespace SeniorAssistant.Controllers
                 return Json(new JsonResponse()
                 {
                     Success = false,
-                    Message = ExceptionSer + Environment.NewLine +
-                              e.Message + Environment.NewLine +
-                              e.StackTrace + Environment.NewLine +
-                              e.TargetSite + Environment.NewLine +
-                              e.InnerException
+                    Message = e.Message + Environment.NewLine
                 });
             }
         }
