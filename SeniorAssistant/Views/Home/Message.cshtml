@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model User
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IDataContextFactory<SeniorDataContext> dbFactory
 @using LinqToDB;
@@ -7,14 +7,12 @@
     ViewBag.Title = "Hello Razor";
     string username = HttpContextAccessor.HttpContext.Session.GetString("username");
     var db = dbFactory.Create();
-    var user = (from u in db.Users
-                where u.Username.Equals(Model)
-                select u).FirstOrDefault();
+    var MaxMessages = 20;
     var messages = (from m in db.Messages
-                    where (m.Username.Equals(Model) && m.Receiver.Equals(username))
-                        ||(m.Receiver.Equals(Model) && m.Username.Equals(username))
+                    where (m.Username.Equals(Model.Username) && m.Receiver.Equals(username))
+                        ||(m.Receiver.Equals(Model.Username) && m.Username.Equals(username))
                     orderby m.Time ascending
-                    select m).ToArray();
+                    select m).Take(MaxMessages).ToArray();
 }
 
 <div class="content">
@@ -24,7 +22,7 @@
     }
     else
     {
-        <h3 class="text-bold">Messaggi con @user.Name @user.LastName</h3>
+        <h3 class="text-bold">Messaggi con @Model.Name @Model.LastName</h3>
 
         foreach (var message in messages)
         {
@@ -72,7 +70,7 @@
                 url: "/Account/_sendMessage",
                 type: "POST",
                 data: {
-                    Receiver: "@Model",
+                    Receiver: "@Model.Username",
                     Body: body
                 },
                 success: function (data) {

@@ -1,44 +1,39 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @inject IDataContextFactory<SeniorDataContext> dbFactory
-
-@{
-    var session = HttpContextAccessor.HttpContext.Session;
-    var db = dbFactory.Create();
-    var username = session.GetString("username");
-    var patientData = db.Patients.Where(p => p.Username.Equals(username)).ToArray().FirstOrDefault();
-    var hasDoc = patientData != null;
-}
+@model User
 
 <div class="content">
     <div class="pull-left" , style="width: 50%">
         <h2 class="alert-success" style="text-align:center">
-            Welcome @username
+            Welcome @Model.Name @Model.LastName
         </h2>
-        name: @session.GetString("name")<br />
-        lastname: @session.GetString("lastname")<br />
-        email: @session.GetString("email")<br />
+        name: @Model.Name<br />
+        lastname: @Model.LastName<br />
+        email: @Model.Email<br />
     </div>
 
     <div class="box pull-right" , style="width: 45%">
-        @if (hasDoc) // is patient and has doc, must show doc data
+        @if (Model.IsPatient()) // is patient and has doc, must show doc data
         {
+            var db = dbFactory.Create();
             var doctor = (from u in db.Users
                           join d in db.Doctors on u.Username equals d.Username
-                          where d.Username.Equals(patientData.Doctor)
+                          where d.Username.Equals(Model.Pat.Doctor)
                           select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
 
             <p class="text-bold">Dottore: @doctor.Name @doctor.LastName</p>
             <p class="text-fuchsia">Dove mi puoi trovare? @doctor.Location</p>
-            <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@patientData.Notes</textarea>
+            <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@Model.Pat.Notes</textarea>
             
             <a class="" href="/Message/@doctor.Username">Invia un messaggio al tuo dottore</a>
         }
         else
         {
+            var db = dbFactory.Create();
             dynamic[] data;
             Type type = null;
             string title = null;
-            var docData = db.Doctors.Where(d => d.Username.Equals(username)).ToArray().FirstOrDefault();
+            var docData = db.Doctors.Where(d => d.Username.Equals(Model.Username)).ToArray().FirstOrDefault();
 
             if (docData != null) // is DOC
             {
