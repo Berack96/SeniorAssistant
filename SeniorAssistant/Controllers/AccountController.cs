@@ -29,7 +29,7 @@ namespace IdentityDemo.Controllers
         private static readonly string UploadsDirec = "/uploads/";
 
         [HttpPost]
-        public async Task<ActionResult> _login(string username, string password)
+        public async Task<IActionResult> _login(string username, string password)
         {
             try
             {
@@ -70,19 +70,21 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public ActionResult _logout()
+        public IActionResult _logout()
         {
             HttpContext.Session.Clear();
             return Json(OkJson);
         }
 
         [HttpPost]
-        public async Task<ActionResult> _register(User user, string code = "")
+        public async Task<IActionResult> _register(User user, Forgot forgot, string code = "")
         {
             try
             {
                 user.Avatar = DefaultImage;
+                forgot.Username = user.Username;
                 Db.Insert(user);
+                Db.Insert(forgot);
                 if (code != null && code.Equals("444442220"))
                 {
                     Db.Insert(new Doctor
@@ -103,7 +105,41 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> _notification(string username, string message, string redirectUrl = "#")
+        public async Task<IActionResult> _modify(User user)
+        {
+            return await LoggedAccessDataOf(user.Username, false, () => {
+                var usr = Db.Users.Where(u => u.Username.Equals(user.Username)).FirstOrDefault();
+
+                if (user.Password.Equals(""))
+                    user.Password = usr.Password;
+                if (user.Avatar.Equals(""))
+                    user.Avatar = usr.Avatar;
+                if (user.Email.Equals(""))
+                    user.Email = usr.Email;
+                if (user.LastName.Equals(""))
+                    user.LastName = usr.LastName;
+                if (user.Name.Equals(""))
+                    user.Name = usr.Name;
+
+                Db.UpdateAsync(user);
+                return Json(OkJson);
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> _checkQuestion(string username, string answer)
+        {
+            var forgot = Db.Forgot.Where(f => f.Username.Equals(username) && f.Answer.Equals(answer)).FirstOrDefault();
+            if(forgot != null)
+            {
+                var user = (from u in Db.Users where u.Username.Equals(forgot.Username) select u).FirstOrDefault();
+                return await _login(user.Username, user.Password);
+            }
+            return Json(new JsonResponse(false, "Risposta sbagliata"));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> _notification(string username, string message, string redirectUrl = "#")
         {
             return await LoggedAction(() =>
             {
@@ -120,7 +156,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> _notification(int id)
+        public async Task<IActionResult> _notification(int id)
         {
             return await LoggedAction(() =>
             {
@@ -142,7 +178,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> _addDoc(string doctor)
+        public async Task<IActionResult> _addDoc(string doctor)
         {
             return await LoggedAction(() =>
             {
@@ -175,7 +211,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> _sendMessage(string receiver, string body)
+        public async Task<IActionResult> _sendMessage(string receiver, string body)
         {
             return await LoggedAction(() => {
                 string username = HttpContext.Session.GetString(Username);
@@ -194,7 +230,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> _addNote(string patient, string text)
+        public async Task<IActionResult> _addNote(string patient, string text)
         {
             return await LoggedAccessDataOf(patient, true, () =>
             {
@@ -208,7 +244,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> _minHeartToPatient(string patient, int value)
+        public async Task<IActionResult> _minHeartToPatient(string patient, int value)
         {
             return await LoggedAccessDataOf(patient, true, () =>
             {
@@ -221,7 +257,7 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult> _maxHeartToPatient(string patient, int value)
+        public async Task<IActionResult> _maxHeartToPatient(string patient, int value)
         {
             return await LoggedAccessDataOf(patient, true, () =>
             {
@@ -234,7 +270,7 @@ namespace IdentityDemo.Controllers
         }
         
         [HttpPost]
-        public async Task<ActionResult> _save(IEnumerable<IFormFile> files)
+        public async Task<IActionResult> _save(IEnumerable<IFormFile> files)
         {
             return await LoggedAction(() =>
             {

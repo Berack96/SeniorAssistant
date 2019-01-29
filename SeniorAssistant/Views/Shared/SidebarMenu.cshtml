@@ -5,10 +5,12 @@
     var session = HttpContextAccessor.HttpContext.Session;
     string search = HttpContextAccessor.HttpContext.Request.Query["q"];
     string username = session.GetString("username");
+    
 
     if (username != null)
     {
         var isDoc = session.GetString("role").Equals("doctor");
+        var MaxPatients = 30;
         var Menu = new List<IMenuItem>();
         Menu.Add(new MenuItem("Profilo", "/"));
         Menu.Add(new MenuItem("Dati personali", "/user/" + username));
@@ -19,7 +21,18 @@
                             where p.Doctor.Equals(username)
                             join u in db.Users on p.Username equals u.Username
                             select new { Username = p.Username, Name = u.Name + " " + u.LastName }).ToArray();
-            var sub = new SubMenu() { Text = "Pazienti", Items = new List<MenuItem>() };
+
+            if(search != null)
+            {
+                patients = (from p in patients
+                            where p.Name.StartsWith(search)
+                            select p).ToArray();
+            }
+
+            patients.Take(MaxPatients);
+
+            var num = patients.Count();
+            var sub = new SubMenu() { Text = num + " pazienti link rapido", Items = new List<MenuItem>() };
             foreach (var p in patients)
             {
                 sub.Items.Add(new MenuItem(p.Name, "/user/" + p.Username));
@@ -32,7 +45,10 @@
             var patient = (from p in db.Patients
                            where p.Username.Equals(username)
                            select p).FirstOrDefault();
-            Menu.Add(new MenuItem("Invia un messaggio al dottore", "/Message/" + patient.Doctor));
+            if (patient != null)
+            {
+                Menu.Add(new MenuItem("Invia un messaggio al dottore", "/Message/" + patient.Doctor));
+            }
         }
         <aside class="main-sidebar">
             <!-- sidebar: style can be found in sidebar.less -->

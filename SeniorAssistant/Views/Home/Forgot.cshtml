@@ -1,0 +1,29 @@
+﻿@model Forgot
+
+<p>Se indovini la risposta allora verrai loggato. Li poi potrai modificare la password.</p>
+<label>Domanda di sicurezza: </label><p>@Model.Question</p>
+<label>Risposta: </label><input id="answer" type="text" placeholder="Risposta"/>
+<p id="error"></p>
+<button id="send-answ">Invia</button>
+
+<script>
+    $("#send-answ").on("click", function () {
+        var answer = $("#answer").val();
+
+        $.ajax({
+            url: "/Account/_checkQuestion",
+            dataType: "json",
+            type: "POST",
+            data: {
+                Username: "@Model.Username",
+                Answer: answer
+            },
+            success: function (data) {
+                if (data.success)
+                    window.location.reload();
+                else
+                    $("#error").html(data.message);
+            }
+        });
+    });
+</script>

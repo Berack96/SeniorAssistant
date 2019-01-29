@@ -133,6 +133,7 @@ namespace SeniorAssistant
                 db.CreateTableIfNotExists<Patient>();
                 db.CreateTableIfNotExists<Notification>();
                 db.CreateTableIfNotExists<Message>();
+                db.CreateTableIfNotExists<Forgot>();
             }
         }
 
@@ -175,8 +176,17 @@ namespace SeniorAssistant
                         db.InsertOrReplace(patient);
                 }
 
+                var forgot = new Forgot()
+                {
+                    Question = "Quale animale ti piace di piu'?",
+                    Answer = "Rayquaza"
+                };
                 foreach (var user in users)
+                {
+                    forgot.Username = user.Username;
+                    db.InsertOrReplace(forgot);
                     db.InsertOrReplace(user);
+                }
 
                 DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
                 now = now.AddHours(DateTime.Now.Hour).AddMinutes(30);

@@ -1,0 +1,56 @@
+﻿@model string
+
+<div class="content">
+    @if (Model != null)
+    {
+        <p class="text-red box-title">Per poter accedere alla pagina [@Model] e' necessario essere loggati</p>
+    }
+    <ul style="list-style-type:none">
+        <li class="user-header">
+            <input type="text" id="username" placeholder="username" />
+            <input type="password" id="password" placeholder="password" />
+            <div>
+                <button class="btn-default btn btn-flat" id="login-btn">Login</button>
+            </div>
+            <p id="msg" class="login-box-msg"></p>
+        </li>
+    </ul>
+    <button id="forgot">Dimanticato la passw?</button>
+    <form id="div-forgot" style="display:none" action="/Forgot" method="get">
+        <label>Username</label><input name="username" type="text" />
+        <input type="submit" id="ok-forgot" value="OK" />
+    </form>
+
+    @Html.ActionLink("Oppure registrati", "Register")
+</div>
+
+<script>
+    $("#forgot").on("click", function () {
+        $("#div-forgot").css("display", "block");
+    });
+
+    $("#ok-forgot").on("click", function () {
+        $("#div-forgot").css("display", "block");
+    });
+
+    $("#login-btn").on("click", function () {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        $.ajax({
+            url: "/Account/_login",
+            data: { Username: username, Password: password },
+            dataType: "json",
+            type: "POST",
+            success: function (data) {
+                var msg = $("#msg");
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    msg.html(data.message).show();
+                    $("#user-menu").addClass("open");
+                }
+                return false;
+            }
+        })
+    });
+</script>

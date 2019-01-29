@@ -23,6 +23,7 @@ namespace SeniorAssistant.Data
         public ITable<Patient> Patients => GetTable<Patient>();
         public ITable<Notification> Notifications => GetTable<Notification>();
         public ITable<Message> Messages => GetTable<Message>();
+        public ITable<Forgot> Forgot => GetTable<Forgot>();
 
         public T[] GetLastMessages<T>(ITable<T> table, string receiver, ref int numNotSeen, int max = 10)
             where T : IHasMessage

@@ -6,12 +6,16 @@
         <input type="password" id="regPassword" placeholder="Password" required />
         <input type="email" id="regEmail" placeholder="Email" required />
         <input type="text" id="regDoctor" placeholder="Doctor only (543210)" />
+        <input type="text" id="passwQues" placeholder="Domanda di sicurezza" required />
+        <input type="text" id="passwAnsw" placeholder="Risposta di sicurezza" required />
         <div>
             <button class="btn-default btn btn-flat" id="register-btn">Register</button>
         </div>
         <p id="msg-reg" class="login-box-msg"></p>
     </li>
 </ul>
+
+@Html.ActionLink("Oppure fai il login", "Login")
 
 <script>
     $("#register-btn").on("click", function () {
@@ -21,6 +25,9 @@
         var password = $("#regPassword").val();
         var email = $("#regEmail").val();
         var code = $("#regDoctor").val();
+
+        var quest = $("#passwQues").val();
+        var answ = $("#passwAnsw").val();
 
         $.ajax({
             url: "/Account/_register",
@@ -32,6 +39,10 @@
                     Lastname: lastname,
                     Password: password,
                     Email: email
+                },
+                Forgot: {
+                    Question: quest,
+                    Answer: answ
                 }
             },
             dataType: "json",

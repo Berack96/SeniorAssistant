@@ -132,9 +132,6 @@ else
                             && Object.keys(sleep).length == 0)
                             $("#chart-data").html("Nessun dato");
                         else {
-                            /* se checked #show-table allora crea dati come data.cshtml for () {
-                                allData.push({"time"});
-                            }*/
                             $("#chart-data").html("");
                             console.log(heartbeat[0].time);
                             console.log("min = " +new Date(heartbeat[0].time).getTime());
