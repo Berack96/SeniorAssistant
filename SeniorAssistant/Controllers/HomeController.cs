@@ -44,6 +44,23 @@ namespace SeniorAssistant.Controllers
         [Route("User/{User}")]
         public IActionResult SingleUser(string user)
         {
+            try
+            {
+                string rm = HttpContext.Request.Query["removePatient"];
+                string usr = HttpContext.Session.GetString(Username);
+
+                var pt = Db.Patients
+                    .Where(p => p.Username.Equals(rm) && p.Doctor.Equals(usr))
+                    .FirstOrDefault();
+                var mp = Db.MenuPatients
+                    .Where(m => m.PatientUsername.Equals(rm) && m.Username.Equals(usr))
+                    .FirstOrDefault();
+
+                Db.Delete(pt);
+                Db.Delete(mp);
+            }
+            catch { }
+
             return CheckAuthorized("User", GetUser(user));
         }
 

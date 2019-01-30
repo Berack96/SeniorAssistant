@@ -3,72 +3,90 @@
 
 @{
     var session = HttpContextAccessor.HttpContext.Session;
-    string search = HttpContextAccessor.HttpContext.Request.Query["q"];
+    string add = HttpContextAccessor.HttpContext.Request.Query["add"];
+    string remove = HttpContextAccessor.HttpContext.Request.Query["remove"];
     string username = session.GetString("username");
-    
+    var db = dbFactory.Create();
+
 
     if (username != null)
     {
         var isDoc = session.GetString("role").Equals("doctor");
-        var MaxPatients = 30;
         var Menu = new List<IMenuItem>();
         Menu.Add(new MenuItem("Profilo", "/"));
         Menu.Add(new MenuItem("Dati personali", "/user/" + username));
-        if (isDoc)
-        {
-            var db = dbFactory.Create();
-            var patients = (from p in db.Patients
-                            where p.Doctor.Equals(username)
-                            join u in db.Users on p.Username equals u.Username
-                            select new { Username = p.Username, Name = u.Name + " " + u.LastName }).ToArray();
 
-            if(search != null)
-            {
-                patients = (from p in patients
-                            where p.Name.StartsWith(search)
-                            select p).ToArray();
-            }
-
-            patients.Take(MaxPatients);
-
-            var num = patients.Count();
-            var sub = new SubMenu() { Text = num + " pazienti link rapido", Items = new List<MenuItem>() };
-            foreach (var p in patients)
-            {
-                sub.Items.Add(new MenuItem(p.Name, "/user/" + p.Username));
-            }
-            Menu.Add(sub);
-        }
-        else
-        {
-            var db = dbFactory.Create();
-            var patient = (from p in db.Patients
-                           where p.Username.Equals(username)
-                           select p).FirstOrDefault();
-            if (patient != null)
-            {
-                Menu.Add(new MenuItem("Invia un messaggio al dottore", "/Message/" + patient.Doctor));
-            }
-        }
         <aside class="main-sidebar">
             <!-- sidebar: style can be found in sidebar.less -->
             <section class="sidebar">
                 @if (isDoc)
                 {
+                    if (add != null)
+                    {
+                        var user = db.Patients
+                            .Where(p => p.Username.Equals(add) && p.Doctor.Equals(username))
+                            .FirstOrDefault();
+
+                        try
+                        {
+                            db.Insert(new MenuPatient()
+                            {
+                                Username = username,
+                                PatientUsername = user.Username
+                            });
+                        }
+                        catch { }
+                    }
+                    if(remove != null)
+                    {
+                        var menu = db.MenuPatients
+                            .Where(p => p.Username.Equals(username) && p.PatientUsername.Equals(remove))
+                            .FirstOrDefault();
+                        if(menu != null)
+                        {
+                            db.Delete(menu);
+                        }
+                    }
+
+                    var patients = db.MenuPatients
+                        .LoadWith(m => m.Usr)
+                        .Where(m => m.Username.Equals(username))
+                        .Select(m => m.Usr)
+                        .ToArray();
+
+                    var num = patients.Count();
+                    var sub = new SubMenu() { Text = num + " pazienti link rapido", Items = new List<MenuItem>() };
+                    foreach (var p in patients)
+                    {
+                        sub.Items.Add(new MenuItem(p.Name + " " + p.LastName, "/user/" + p.Username));
+                    }
+                    Menu.Add(sub);
+
                     <!-- Sidebar user panel (optional) -->
                     <!-- search form (Optional) -->
-                    <form action="#" method="get" class="sidebar-form">
+                    <div class=" sidebar-menu text-muted">Aggiungi un utente ai link rapidi</div>
+                    <form action="" method="get" class="sidebar-form">
                         <div class="input-group">
-                            <input type="text" name="q" class="form-control" placeholder="Search..." , value="@search">
+                            <input type="text" name="add" class="form-control" placeholder="Aggiungi..." , value="">
                             <span class="input-group-btn">
-                                <button type="submit" name="search" id="search-btn" class="btn btn-flat">
-                                    <i class="fa fa-search"></i>
+                                <button type="submit" class="btn btn-flat">
+                                    <i class="fa fa-plus"></i>
                                 </button>
                             </span>
                         </div>
                     </form>
                     <!-- /.search form -->
                     <!-- Sidebar Menu -->
+                }
+                else
+                {
+                    var patient = (from p in db.Patients
+                                   where p.Username.Equals(username)
+                                   select p).FirstOrDefault();
+                    if (patient != null)
+                    {
+                        Menu.Add(new MenuItem("Invia un messaggio al dottore", "/Message/" + patient.Doctor));
+                    }
                 }
                 <div>
                     <ul class="sidebar-menu" data-widget="tree">
@@ -82,28 +100,25 @@
                                     </li>
                                     break;
                                 case SubMenu multi:
-                                    <li class="treeview @if(search != null) {<text>menu-open</text>}">
+                                    <li class="treeview">
                                         <a href="#">
                                             <i class="fa fa-link"></i><span>@multi.Text</span>
                                             <span class="pull-right-container">
                                                 <i class="fa fa-angle-left pull-right"></i>
                                             </span>
                                         </a>
-                                        <ul class="treeview-menu" @if (search != null) { <text> style="display: block;" </text> }>
+                                        <ul class="treeview-menu">
                                             @foreach (MenuItem item in multi.Items)
                                             {
                                                 <li>
-                                                    @{
-                                                        var text = item.Text;
-                                                        var bg = "";
-                                                        if (search != null && item.Text.StartsWith(search))
-                                                        {
-                                                            bg = "bg-aqua";
-                                                            text = item.Text.Replace(search, "<em>" + search + "</em>");
-                                                        }
-                                                    }
-                                                    <a href="@item.HRef" class="@bg">
-                                                        @Html.Raw(text)
+                                                    <a href="@item.HRef">
+                                                        <span>@Html.Raw(item.Text)</span>
+                                                        <form class="pull-right-container" action="" method="get">
+                                                            <input type="text" name="remove" class="hide" value="@System.IO.Path.GetFileName(item.HRef)">
+                                                            <button class="no-border btn-flat" type="submit">
+                                                                <i class="fa fa-minus pull-right"></i>
+                                                            </button>
+                                                        </form>
                                                     </a>
                                                 </li>
                                             }
@@ -118,11 +133,5 @@
             </section>
             <!-- /.sidebar -->
         </aside>
-        @if (search != null)
-        {
-            <script>
-                $("body").removeClass("sidebar-collapse");
-            </script>
-        }
     }
 }

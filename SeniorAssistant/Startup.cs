@@ -134,6 +134,7 @@ namespace SeniorAssistant
                 db.CreateTableIfNotExists<Notification>();
                 db.CreateTableIfNotExists<Message>();
                 db.CreateTableIfNotExists<Forgot>();
+                db.CreateTableIfNotExists<MenuPatient>();
             }
         }
 

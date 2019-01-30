@@ -205,7 +205,7 @@ namespace IdentityDemo.Controllers
                     Username = username
                 });
 
-                var a = _notification(doctor, InsertAsDoct + username);
+                var a = _notification(doctor, InsertAsDoct + username, "/user/" + username);
                 return Json(OkJson);
             });
         }

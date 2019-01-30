@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider;
@@ -24,6 +23,7 @@ namespace SeniorAssistant.Data
         public ITable<Notification> Notifications => GetTable<Notification>();
         public ITable<Message> Messages => GetTable<Message>();
         public ITable<Forgot> Forgot => GetTable<Forgot>();
+        public ITable<MenuPatient> MenuPatients => GetTable<MenuPatient>();
 
         public T[] GetLastMessages<T>(ITable<T> table, string receiver, ref int numNotSeen, int max = 10)
             where T : IHasMessage

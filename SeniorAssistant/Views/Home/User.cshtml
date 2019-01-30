@@ -35,6 +35,9 @@ else
     </div>
     @if (isDoc)
     {
+        <form action="" method="get" onsubmit="return confirm('Sicuro di voler rimuovere il paziente?');">
+            <button type="submit" name="removePatient" class="btn flat-btn" value="@Model.Username">Rimuovi paziente</button>
+        </form>
         <div>
             <textarea id="note-area" placeholder="Scrivi una nota..">@Model.Pat.Notes</textarea>
             <button id="send-note" class="btn">Salva</button>
@@ -125,8 +128,7 @@ else
                             $("#chart-data").html("Nessun dato");
                         else {
                             $("#chart-data").html("");
-                            console.log(heartbeat[0].time);
-                            console.log("min = " +new Date(heartbeat[0].time).getTime());
+
                             var minDate = Math.min(
                                 new Date(heartbeat[0].time).getTime(),
                                 new Date(steps[0].time).getTime(),
