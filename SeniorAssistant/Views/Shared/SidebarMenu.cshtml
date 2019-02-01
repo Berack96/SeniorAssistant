@@ -69,10 +69,9 @@
 
                     <!-- Sidebar user panel (optional) -->
                     <!-- search form (Optional) -->
-                    <div class=" sidebar-menu text-muted">Aggiungi un utente ai link rapidi</div>
                     <form action="" method="get" class="sidebar-form">
                         <div class="input-group">
-                            <input type="text" name="add" class="form-control" placeholder="Aggiungi..." , value="">
+                            <input type="text" name="add" class="form-control" placeholder="Aggiungi utente ai link" , value="">
                             <span class="input-group-btn">
                                 <button type="submit" class="btn btn-flat">
                                     <i class="fa fa-plus"></i>
@@ -105,14 +104,14 @@
                                     </li>
                                     break;
                                 case SubMenu multi:
-                                    <li class="treeview">
+                                    <li class="treeview menu-open">
                                         <a href="#">
                                             <i class="fa fa-link"></i><span>@multi.Text</span>
                                             <span class="pull-right-container">
                                                 <i class="fa fa-angle-left pull-right"></i>
                                             </span>
                                         </a>
-                                        <ul class="treeview-menu">
+                                        <ul class="treeview-menu" style="display:block">
                                             @foreach (MenuItem item in multi.Items)
                                             {
                                                 <li>
@@ -120,7 +119,7 @@
                                                         <span>@Html.Raw(item.Text)</span>
                                                         <form class="pull-right-container" action="" method="get">
                                                             <input type="text" name="remove" class="hide" value="@System.IO.Path.GetFileName(item.HRef)">
-                                                            <button class="no-border btn-flat" type="submit">
+                                                            <button class="no-border btn-flat" style="background-color:#2c3b41" type="submit" role="form">
                                                                 <i class="fa fa-minus pull-right"></i>
                                                             </button>
                                                         </form>

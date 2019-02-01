@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace SeniorAssistant.Controllers
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : BaseController
     {
         [Route("")]
         [Route("Home")]
         [Route("Index")]
+        [Route("Login")]
         public IActionResult Login()
         {
             return CheckUnAuthorized("Login");
@@ -88,7 +88,7 @@ namespace SeniorAssistant.Controllers
         {
             if (IsLogged())
             {
-                return RedirectToAction("Profile", "Home", GetUser(HttpContext.Session.GetString(Username)));
+                return RedirectToAction("Profile", "Home");
             }
 
             var forgot = Db.Forgot.Where(f => f.Username.Equals(username)).FirstOrDefault();
@@ -101,7 +101,8 @@ namespace SeniorAssistant.Controllers
         {
             if (!IsLogged())
             {
-                return RedirectToAction("Login", "Home", "/" + view);
+                model = "/" + view;
+                view = "Login";
             }
             return View(view, model);
         }
@@ -110,7 +111,7 @@ namespace SeniorAssistant.Controllers
         {
             if (IsLogged())
             {
-                return RedirectToAction("Profile", "Home", GetUser(HttpContext.Session.GetString(Username)));
+                return RedirectToAction("Profile", "Home");
             }
             return View(view, model);
         }

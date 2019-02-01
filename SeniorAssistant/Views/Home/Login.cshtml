@@ -39,7 +39,6 @@
             </div>
             <!-- /.box-body -->
             <div class="box-footer">
-                <input type="reset" class="btn btn-default" value="Svuota" />
                 <input type="submit" class="btn btn-info pull-right" id="login-btn" value="Login" />
                 <p id="msg" class="login-box-msg"></p>
             </div>
@@ -48,7 +47,7 @@
         </div>
         <div class="box-footer">
             <button type="button" id="forgot" class="btn btn-default">Passsword dimenticata</button>
-            <button type="button" class="btn btn-info pull-right">@Html.ActionLink("Registrati", "Register")</button>
+            <a href="/Register" type="button" class="btn btn-info pull-right">Registrati</a>
 
             <br />
             <form id="div-forgot" style="display:none" action="/Forgot" method="get">

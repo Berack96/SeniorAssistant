@@ -13,14 +13,11 @@ using System.Net.Http.Headers;
 
 namespace IdentityDemo.Controllers
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]/[action]")]
     public class AccountController : BaseController
     {
         private static readonly string NoteModified = "Il tuo dottore ha modificato la nota per te";
         private static readonly string InvalidLogIn = "Username o Password sbagliati";
-        private static readonly string AlreadyLogIn = "L'utente e' gia' loggato";
-        private static readonly string UsernameDupl = "Lo username selezionato e' gia' in uso";
         private static readonly string ModNotExists = "L'oggetto da modificare non esiste";
         private static readonly string AlreadyPatie = "Sei gia' un paziente";
         private static readonly string DocNotExists = "Il dottore selezionato non esiste";
@@ -105,11 +102,10 @@ namespace IdentityDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> _modify(User user)
+        public async Task<IActionResult> _modify(User user, Doctor doctor)
         {
             return await LoggedAccessDataOf(user.Username, false, () => {
                 var usr = Db.Users.Where(u => u.Username.Equals(user.Username)).FirstOrDefault();
-
                 if (user.Password.Equals(""))
                     user.Password = usr.Password;
                 if (user.Avatar.Equals(""))
@@ -120,8 +116,20 @@ namespace IdentityDemo.Controllers
                     user.LastName = usr.LastName;
                 if (user.Name.Equals(""))
                     user.Name = usr.Name;
-
+                
                 Db.UpdateAsync(user);
+
+                var doc = Db.Doctors.Where(d => d.Username.Equals(user.Username)).FirstOrDefault();
+                if(doc!=null)
+                {
+                    if (!doctor.PhoneNumber.Equals(""))
+                        doc.PhoneNumber = doctor.PhoneNumber;
+                    if (!doctor.Schedule.Equals(""))
+                        doc.Schedule = doctor.Schedule;
+
+                    Db.UpdateAsync(doc);
+                }
+
                 return Json(OkJson);
             });
         }

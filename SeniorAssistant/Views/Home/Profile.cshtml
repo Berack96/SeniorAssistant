@@ -8,28 +8,30 @@
         <div class="col-md-4">
             <div class="box box-info bg-gray-light" style="border-top-color: darkgray">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Dati utente</h3>
+                    <h2 class="box-title">Dati utente</h2>
+                    <p></p><label>Per modificare i dati:    </label>
+                    <a href="#" type="button" class="text btn btn-default" id="btn-mod"> Premi qui</a>
                 </div>
                 <section class="form-horizontal">
                     <div class="box-body">
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input class="mod-data hide" type="text" value="@Model.Name" id="mod-name" />
-                                <input class="old-data" disabled type="text" value="@Model.Name" /><br />
+                                <input class="form-control mod-data hide" type="text" value="@Model.Name" id="mod-name" />
+                                <input class="form-control old-data form-control" disabled type="text" value="@Model.Name" /><br />
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input class="mod-data hide" type="text" value="@Model.LastName" id="mod-last" />
-                                <input class="old-data" disabled type="text" value="@Model.LastName" /><br />
+                                <input class="form-control mod-data hide" type="text" value="@Model.LastName" id="mod-last" />
+                                <input class="form-control old-data" disabled type="text" value="@Model.LastName" /><br />
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input class="mod-data hide" type="email" value="@Model.Email" id="mod-email" />
-                                <input class="old-data" disabled type="email" value="@Model.Email" /><br />
+                                <input class="form-control mod-data hide" type="email" value="@Model.Email" id="mod-email" />
+                                <input class="form-control old-data" disabled type="email" value="@Model.Email" /><br />
                             </div>
                         </div>
 
@@ -37,39 +39,39 @@
                         {
                             <div class="form-group">
                                 <div class="col-sm-10">
-                                    <input class="mod-data hide" type="text" value="@Model.Doc.PhoneNumber" id="mod-phone" />
-                                    <input class="old-data" disabled type="text" value="@Model.Doc.PhoneNumber" /><br />
+                                    <input class="form-control mod-data hide" type="number" value="@Model.Doc.PhoneNumber" id="mod-phone" />
+                                    <input class="form-control old-data" disabled type="number" value="@Model.Doc.PhoneNumber" /><br />
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <div class="col-sm-10">
-                                    <input class="mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" />
-                                    <input class="old-data" disabled type="text" value="@Model.Doc.Schedule" /><br />
+                                    <input class="form-control mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" />
+                                    <input class="form-control old-data" disabled type="text" value="@Model.Doc.Schedule" /><br />
                                 </div>
                             </div>
                         }
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input type="text" value="@Model.Username" disabled /><br />
+                                <input class="form-control" type="text" value="@Model.Username" disabled /><br />
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input class="mod-data hide" type="password" id="mod-pass1" placeholder="Nuova password" /><br />
+                                <input class="form-control mod-data hide" type="password" id="mod-pass1" placeholder="Nuova password" /><br />
                             </div>
                         </div>
 
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input class="mod-data hide" type="password" id="mod-pass2" placeholder="Conferma password" /><br />
+                                <input class="form-control mod-data hide" type="password" id="mod-pass2" placeholder="Conferma password" /><br />
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="image-uploader" style="display:none">
                             <div class="col-sm-10">
-                                <div id="image-uploader" style="display:none">
+                                <div>
                                     <form method="post" enctype="multipart/form-data">
                                         <span>Cambia immagine profilo</span>
                                         <input type="file" name="files" id="files" />
@@ -80,10 +82,9 @@
                     </div>
                 </section>
                 <div class="box-footer">
-                    <p id="msg">Lasciare i campi vuoti per non modificare</p>
+                    <p id="msg"></p>
+                    <input class="btn btn-info pull-right mod-data hide" type="button" id="update-user" value="Aggiorna"/>
 
-                    <input type="button" class="btn btn-default" value="Premere per modificare" id="btn-mod" />
-                    <input class="btn btn-info pull-right" type="button" id="update-user" value="Aggiorna" style="display: none" />
                 </div>
             </div>
         </div>
@@ -112,19 +113,20 @@
 
                             <div class="form-group">
                                 <div class="input-group-btn input-group-sm">
-                                    <h5 class="box-comment">Orario visite: <strong>@doctor.Schedule</strong></h5>
+                                    <h5 class="form-control box-comment">Orario visite: <strong>@doctor.Schedule</strong></h5>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Note da parte del dottore:</label>
-                                <p class="form-control" placeholder="Nessuna nuova nota" style="height:50px">@Model.Pat.Notes</p>
+                                <textarea class="form-control" placeholder="Nessuna nota" readonly rows="10" style="resize:none">@Model.Pat.Notes</textarea>
+                                <br />
                                 <div class="input-group-btn input-group-sm">
                                     <a href="/Message/@doctor.Username" class="btn btn-flat btn-info">Scrivi un messaggio</a>
                                 </div>
                             </div>
                         </div>
                     </div>
-              </div>
+                </div>
             }
             else
             {
@@ -137,7 +139,9 @@
                 if (docData != null) // is DOC
                 {
                     // see all the patient of the doc
-                    title = "Lista dei pazienti";
+                    <div class="box-header with-border">
+                        <h2 class="box-title">Lista dei pazienti</h2>
+                    </div>
                     var patients = (from u in db.Users
                                     join p in db.Patients on u.Username equals p.Username
                                     where p.Doctor.Equals(docData.Username)
@@ -255,7 +259,6 @@
         $(".old-data").toggleClass("hide");
 
         $("#image-uploader").toggle();
-        $("#update-user").toggle();
     });
 
     $("#update-user").on("click", function () {
@@ -279,7 +282,9 @@
                     Name: name,
                     Lastname: lastname,
                     Password: password,
-                    Email: email,
+                    Email: email
+                },
+                Doctor: {
                     Schedule: schedule,
                     PhoneNumber: phone
                 }
@@ -287,7 +292,7 @@
             dataType: "json",
             type: "POST",
             success: function (data) {
-                var msg = $("#msg-reg");
+                var msg = $("#msg");
                 if (data.success) {
                     window.location.reload();
                 } else {

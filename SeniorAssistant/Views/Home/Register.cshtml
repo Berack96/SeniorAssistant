@@ -51,9 +51,10 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-sm-3 control-label">Code Doctor</label>
+                    <label class="col-sm-3 control-label">Sei un dottore?</label>
                     <div class="col-sm-8">
-                        <input class="form-control" type="text" id="regDoctor" placeholder="(54328)" />
+                        <input type="checkbox" id="check" />
+                        <input class="form-control hide" type="text" id="regDoctor" placeholder="(543210)" />
                     </div>
                 </div>
 
@@ -72,10 +73,9 @@
                 </div>
             </div>
             <div class="box-footer">
-                <input type="reset" class="btn btn-default" />
                 <button class="btn btn-info pull-right" id="register-btn">Register</button>
+                <a href="/Login" type="button" class="btn btn-info">Torna al login</a>
                 <p id="msg-reg" class="login-box-msg text-red"></p>
-                <button type="button" class="btn btn-info">@Html.ActionLink("Torna al login", "Login")</button>
             </div>
         </div>
     </div>
@@ -84,6 +84,11 @@
 
 
 <script>
+    $("#check").on("click", function () {
+        $("#regDoctor").addClass("hide");
+        $("#check").removeClass("hide");
+    });
+
     $("#register-btn").on("click", function () {
         var username = $("#regUsername").val();
         var name = $("#regName").val();

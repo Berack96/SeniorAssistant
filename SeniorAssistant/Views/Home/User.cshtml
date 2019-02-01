@@ -19,61 +19,42 @@
 }
 else
 {
-    <div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <div class="input-group">
-                    <input id="hours-data" type="text" placeholder="hours" value="24" class="form-control timepicker" />
-
-                    <div class="input-group-addon">
-                        <input type="button" value="Cambia ora" class="no-border" id="refresh-hours">
-                    </div>
-                </div>
-                <!-- /.input group -->
-
-
-            </div>
-            <!-- /.form group -->
-        </div>
-
-        <div class="col-md-1"></div>
-
-        <div class="col-md-6">
-            <div class="form-group">
-                <div class="input-group">
-                    <div class="input-group-addon">
-                        <i class="fa fa-calendar"></i>
-                    </div>
-                    <input id="date-from" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["from"]" />
-                    <input id="date-to" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["to"]" />
-                    <input type="button" id="refresh-date" class="fc-button no-border" value="Cambia data" />
-                </div>
-            </div>
-        </div>
-
-        @if (isDoc)
-        {
-            <div class="form-group">
-                <form action="" method="get" onsubmit="return confirm('Sicuro di voler rimuovere il paziente?');">
-                    <button type="submit" name="removePatient" class="btn btn-default" value="@Model.Username">Rimuovi paziente</button>
-                </form>
-            </div>
-        }
-    </div>
-    <div class="row"></div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-4">
+            <table>
+                <tr>
+                    <div class="form-group">
+                        <div class="input-group col-md-10">
+                            <input id="hours-data" type="text" placeholder="hours" value="24" class="form-control timepicker" />
+
+                            <div class="input-group-addon">
+                                <input type="button" value="Cambia ora" class="no-border" id="refresh-hours">
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+                <tr>
+                    <div class="form-group">
+                        <div class="input-group col-md-4">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <input id="date-from" class="form-control" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["from"]" />
+                            
+                            <input id="date-to" class="form-control" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["to"]" />
+                            <div class="input-group-addon">
+                                <input type="button" id="refresh-date" class="no-border btn" value="Cambia data" />                      
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-md-4">
             @if (isDoc)
             {
-                <div class="form-group col-md-3">
-                    <label>Scrivi una nota per il paziente</label>
-                    <textarea id="note-area" placeholder="Scrivi una nota.." class="form-control" rows="2">@Model.Pat.Notes</textarea>
-                    <button id="send-note" class="btn">Salva</button>
-                    <p id="note-error"></p>
-                </div>
-                <div class="col-md-1"></div>
-
-                <div class="form-group col-md-5">
+                <div class="form-group col-md-10">
                     <label>Inserisci un minimo o massimo valore per il battito cardiaco</label>
                     <p>Se il valore del battito del paziente supera i valori che hai inserito verrai notificato</p>
                     <div class="form-group col-md-5">
@@ -85,67 +66,84 @@ else
                         <input id="minHeart" placeholder="min" value="@Model.Pat.MinHeart" class="form-control" />
                     </div>
                 </div>
-                <div class="col-md-1"></div>
-
-                <div class="form-group">
-                    <div class="input-group-btn input-group-sm">
-                        <a href="/Message/@Model.Pat.Username" class="btn btn-flat btn-info">Scrivi a @Model.Name </a>
-                    </div>
-                </div>
-                <script>
-                    $("#send-note").on("click", function () {
-                        var text = $("#note-area").val().trim();
-                        $.ajax({
-                            url: "/Account/_addNote",
-                            type: "PUT",
-                            data: {
-                                Patient: "@Model.Username", Text: text
-                            },
-                            success: function (data) {
-                                $("#note-error").html(data.success ? "Nota salvata" : data.message);
-                            }
-                        });
-                    });
-                    $("#maxHeart, #minHeart").on("change keyup paste click", function () {
-                        onlyNum($(this));
-                    });
-                    $("#maxHeart, #minHeart").on("blur", function () {
-                        var value = parseInt($(this).val());
-                        var id = $(this).attr("id");
-                        $.ajax({
-                            url: "/Account/_" + id + "ToPatient",
-                            type: "PUT",
-                            data: {
-                                Patient: "@Model.Username",
-                                Value: value
-                            }
-                        });
-                    });
-                </script>
             }
         </div>
+
+        <div class="col-md-4">
+            @if (isDoc)
+            {
+                <div class="form-group">
+                    <label>Scrivi una nota per il paziente</label>
+                    <textarea id="note-area" placeholder="Scrivi una nota.." class="form-control" rows="3" style="resize:none">@Model.Pat.Notes</textarea>
+                    <button id="send-note" class="btn">Salva</button>
+                    <p id="note-error"></p>
+                </div>
+            }
+        </div>
+
+
+
     </div>
-    <div class="form-group">
-        <label>
-            <input type="checkbox" id="show-table">
-            Mostra dati sottoforma tabella
-        </label>
+    
+    <div class="row">
+        @if (isDoc)
+        {
+            <div class="form-group col-md-4">
+                <form action="" method="get" onsubmit="return confirm('Sicuro di voler rimuovere il paziente?');">
+                    <button type="submit" name="removePatient" class="btn btn-danger" value="@Model.Username">Rimuovi paziente</button>
+                </form>
+            </div>
+
+            <div class="form-group col-md-4">
+                <div class="input-group-btn input-group-sm col-md-10">
+                    <a href="/Message/@Model.Pat.Username" class="btn btn-flat btn-info">Scrivi a @Model.Name </a>
+                </div>
+            </div>
+        }
+        <div class="form-group col-md-4">
+             <input type="checkbox" id="show-table">
+            <label>
+                Mostra dati sotto forma di tabella
+            </label>
+        </div>
     </div>
     <div id="chart-data"></div>
+
     <script>
-        $(function () {
-            $('#reservation').daterangepicker();
-            $('#datepicker').datepicker({
-                autoclose: true
+        $("#send-note").on("click", function () {
+            var text = $("#note-area").val().trim();
+            $.ajax({
+                url: "/Account/_addNote",
+                type: "PUT",
+                data: {
+                    Patient: "@Model.Username", Text: text
+                },
+                success: function (data) {
+                    $("#note-error").html(data.success ? "Nota salvata" : data.message);
+                }
             });
         });
-
+        $("#maxHeart, #minHeart").on("change keyup paste click", function () {
+            onlyNum($(this));
+        });
+        $("#maxHeart, #minHeart").on("blur", function () {
+            var value = parseInt($(this).val());
+            var id = $(this).attr("id");
+            $.ajax({
+                url: "/Account/_" + id + "ToPatient",
+                type: "PUT",
+                data: {
+                    Patient: "@Model.Username",
+                    Value: value
+                }
+            });
+        });
         function onlyNum(object, numChar = 3) {
             object.val(object.val().replace(/[^0-9]/g, '').substring(0, numChar));
         }
 
         $("#show-table").on("click", function () {
-            $("#refresh-hours").click();
+            $(toRefresh).click();
         });
 
         $("#hours-data").on("change keyup paste click", function () {
@@ -154,12 +152,14 @@ else
         $("#refresh-hours").on("click", function () {
             var hours = $("#hours-data").val();
             var end_url = "/@Model.Username/last/" + hours;
+            toRefresh = "#refresh-hours";
             kendoUpdate(end_url);
         });
         $("#refresh-date").on("click", function () {
             var from = $("#date-from").val();
             var to = $("#date-to").val();
-            var end_url = "/@Model.Username/"+from+"/"+to;
+            var end_url = "/@Model.Username/" + from + "/" + to;
+            toRefresh = "#refresh-date";
             kendoUpdate(end_url);
         });
 
@@ -184,7 +184,7 @@ else
                         if (Object.keys(heartbeat).length == 0
                             && Object.keys(steps).length == 0
                             && Object.keys(sleep).length == 0)
-                            $("#chart-data").html("Nessun dato");
+                            $("#chart-data").html("<h3 class='text-center text-red'>Nessun Dato</h3>");
                         else {
                             $("#chart-data").html("");
                             if (sleepArr.length == 0)
