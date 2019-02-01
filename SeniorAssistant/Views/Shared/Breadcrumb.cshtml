@@ -1,17 +1,17 @@
 ﻿@{
-    var controller = ViewContext.RouteData.Values["Controller"];
-    var action = ViewContext.RouteData.Values["Action"];
+    var controller = ViewContext.RouteData.Values["Controller"].ToString();
+    var action = ViewContext.RouteData.Values["Action"].ToString();
 }
 
 <div class="breadcrumb">
-    @Html.ActionLink("Home", "Index", "Home")
-    @if (controller.ToString() != "Home")
+    @Html.ActionLink("Home", "Profile", "Home")
+    @if (controller != "Home")
     {
-        @:> @Html.ActionLink(controller.ToString(), "Index", controller.ToString())
+        @:> @Html.ActionLink(controller, "Index", controller)
     }
-    @if (action.ToString() != "Index")
+    @if (action != "Index")
     {
-        @:> @Html.ActionLink(action.ToString(), action.ToString(), controller.ToString())
+        @:> @Html.ActionLink(action, action, controller)
     }
     
 </div>

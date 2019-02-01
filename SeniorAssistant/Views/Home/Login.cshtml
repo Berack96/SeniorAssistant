@@ -1,0 +1,95 @@
+﻿@model string
+
+@if (Model != null)
+{
+    var m = Model;
+    if (Model.StartsWith("/"))
+    {
+        m = "Per poter accedere alla pagina[" + Model + "] e' necessario essere loggati";
+    }
+    <div class="col-md-4"></div>
+    <p class="text-red box-title">@m</p>
+}
+
+<div class="col-md-4"></div>
+<div class="col-md-4">
+    <!-- Login Form -->
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Login</h3>
+        </div>
+        <!-- /.box-header -->
+        <!-- form start -->
+        <div class="form-horizontal">
+            <div class="box-body">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Username</label>
+
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="username" placeholder="Username" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Password</label>
+
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="password" placeholder="Password" />
+                    </div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <input type="submit" class="btn btn-info pull-right" id="login-btn" value="Login" />
+                <p id="msg" class="login-box-msg"></p>
+            </div>
+
+            <!-- /.box-footer -->
+        </div>
+        <div class="box-footer">
+            <button type="button" id="forgot" class="btn btn-default">Passsword dimenticata</button>
+            <a href="/Register" type="button" class="btn btn-info pull-right">Registrati</a>
+
+            <br />
+            <form id="div-forgot" style="display:none" action="/Forgot" method="get">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Username</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" name="username"><br />
+                            <input class="btn btn-default" type="submit" id="ok-forgot" value="Recupera password" />
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- /.box -->
+</div>
+<div class="col-md-4"></div>
+
+<script>
+    $("#forgot").on("click", function () {
+        $("#div-forgot").toggle();
+    });
+
+    $("#login-btn").on("click", function () {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        $.ajax({
+            url: "/Account/_login",
+            data: { Username: username, Password: password },
+            dataType: "json",
+            type: "POST",
+            success: function (data) {
+                var msg = $("#msg");
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    msg.html(data.message).show();
+                    $("#user-menu").addClass("open");
+                }
+                return false;
+            }
+        })
+    });
+</script>

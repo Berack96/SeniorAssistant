@@ -20,6 +20,8 @@ namespace SeniorAssistant.Models
         
         public string LastName { get; set; }
 
+        public string Avatar { get; set; }
+
         [JsonIgnore]
         [Association(ThisKey = nameof(Username), OtherKey = nameof(Doctor.Username), CanBeNull = true)]
         public Doctor Doc { get; set; }

@@ -3,9 +3,10 @@
 @model User
 
 @{
-    ViewBag.Title = "Hello Razor";
+    ViewBag.Title = "Dati paziente";
     var session = HttpContextAccessor.HttpContext.Session;
     var username = session.GetString("username");
+    bool filter = HttpContextAccessor.HttpContext.Request.Query["from"] != (String)null;
 
     bool auth = username.Equals(Model.Username);
     bool isDoc = Model.IsPatient() && username.Equals(Model.Pat.Doctor);
@@ -18,72 +19,154 @@
 }
 else
 {
-    <div>
-        <input id="hours-data" type="text" placeholder="hours" value="24" />
-        <button id="refresh-hours" class="fc-button">Cambia ora</button>
-        <div id="chart-data"></div>
+    <div class="row">
+        <div class="col-md-4">
+            <table>
+                <tr>
+                    <div class="form-group">
+                        <div class="input-group col-md-10">
+                            <input id="hours-data" type="text" placeholder="hours" value="24" class="form-control timepicker" />
+
+                            <div class="input-group-addon">
+                                <input type="button" value="Cambia ora" class="no-border" id="refresh-hours">
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+                <tr>
+                    <div class="form-group">
+                        <div class="input-group col-md-4">
+                            <div class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <input id="date-from" class="form-control" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["from"]" />
+                            
+                            <input id="date-to" class="form-control" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["to"]" />
+                            <div class="input-group-addon">
+                                <input type="button" id="refresh-date" class="no-border btn" value="Cambia data" />                      
+                            </div>
+                        </div>
+                    </div>
+                </tr>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            @if (isDoc)
+            {
+                <div class="form-group col-md-10">
+                    <label>Inserisci un minimo o massimo valore per il battito cardiaco</label>
+                    <p>Se il valore del battito del paziente supera i valori che hai inserito verrai notificato</p>
+                    <div class="form-group col-md-5">
+                        <label>Max:</label>
+                        <input id="maxHeart" placeholder="max" value="@Model.Pat.MaxHeart" class="form-control" />
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label>Min:</label>
+                        <input id="minHeart" placeholder="min" value="@Model.Pat.MinHeart" class="form-control" />
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            @if (isDoc)
+            {
+                <div class="form-group">
+                    <label>Scrivi una nota per il paziente</label>
+                    <textarea id="note-area" placeholder="Scrivi una nota.." class="form-control" rows="3" style="resize:none">@Model.Pat.Notes</textarea>
+                    <button id="send-note" class="btn">Salva</button>
+                    <p id="note-error"></p>
+                </div>
+            }
+        </div>
+
+
+
     </div>
-    @if (isDoc)
-    {
-        <div>
-            <textarea id="note-area" placeholder="Scrivi una nota..">@Model.Pat.Notes</textarea>
-            <button id="send-note" class="btn">Salva</button>
-            <p id="note-error"></p>
+    
+    <div class="row">
+        @if (isDoc)
+        {
+            <div class="form-group col-md-4">
+                <form action="" method="get" onsubmit="return confirm('Sicuro di voler rimuovere il paziente?');">
+                    <button type="submit" name="removePatient" class="btn btn-danger" value="@Model.Username">Rimuovi paziente</button>
+                </form>
+            </div>
+
+            <div class="form-group col-md-4">
+                <div class="input-group-btn input-group-sm col-md-10">
+                    <a href="/Message/@Model.Pat.Username" class="btn btn-flat btn-info">Scrivi a @Model.Name </a>
+                </div>
+            </div>
+        }
+        <div class="form-group col-md-4">
+             <input type="checkbox" id="show-table">
+            <label>
+                Mostra dati sotto forma di tabella
+            </label>
         </div>
-        <a class="" href="/Message/@Model.Pat.Username">Invia un messaggio al tuo paziente</a>
-        <div>
-            <p>Inserisci un minimo o massimo valore per il battito cardiaco</p>
-            <p>Se il valore del battito del paziente supera i valori che hai inserito verrai notificato</p>
-            <label>Max:</label>
-            <input id="maxHeart" placeholder="max" value="@Model.Pat.MaxHeart" />
-            <label>Min:</label>
-            <input id="minHeart" placeholder="min" value="@Model.Pat.MinHeart" />
-        </div>
-        <script>
-            $("#send-note").on("click", function () {
-                var text = $("#note-area").val().trim();
-                $.ajax({
-                    url: "/Account/_addNote",
-                    type: "PUT",
-                    data: {
-                        Patient: "@Model.Username", Text: text
-                    },
-                    success: function (data) {
-                        $("#note-error").html(data.success ? "Nota salvata" : data.message);
-                    }
-                });
-            });
-            $("#maxHeart, #minHeart").on("change keyup paste click", function () {
-                onlyNum($(this));
-            });
-            $("#maxHeart, #minHeart").on("blur", function () {
-                var value = parseInt($(this).val());
-                var id = $(this).attr("id");
-                $.ajax({
-                    url: "/Account/_" + id + "ToPatient",
-                    type: "PUT",
-                    data: {
-                        Patient: "@Model.Username",
-                        Value: value
-                    }
-                });
-            });
-        </script>
-    }
+    </div>
+    <div id="chart-data"></div>
 
     <script>
+        $("#send-note").on("click", function () {
+            var text = $("#note-area").val().trim();
+            $.ajax({
+                url: "/Account/_addNote",
+                type: "PUT",
+                data: {
+                    Patient: "@Model.Username", Text: text
+                },
+                success: function (data) {
+                    $("#note-error").html(data.success ? "Nota salvata" : data.message);
+                }
+            });
+        });
+        $("#maxHeart, #minHeart").on("change keyup paste click", function () {
+            onlyNum($(this));
+        });
+        $("#maxHeart, #minHeart").on("blur", function () {
+            var value = parseInt($(this).val());
+            var id = $(this).attr("id");
+            $.ajax({
+                url: "/Account/_" + id + "ToPatient",
+                type: "PUT",
+                data: {
+                    Patient: "@Model.Username",
+                    Value: value
+                }
+            });
+        });
         function onlyNum(object, numChar = 3) {
             object.val(object.val().replace(/[^0-9]/g, '').substring(0, numChar));
         }
+
+        $("#show-table").on("click", function () {
+            $(toRefresh).click();
+        });
 
         $("#hours-data").on("change keyup paste click", function () {
             onlyNum($(this), 2);
         });
         $("#refresh-hours").on("click", function () {
             var hours = $("#hours-data").val();
-            var base_url = "@Url.Content("~/api/")";
             var end_url = "/@Model.Username/last/" + hours;
+            toRefresh = "#refresh-hours";
+            kendoUpdate(end_url);
+        });
+        $("#refresh-date").on("click", function () {
+            var from = $("#date-from").val();
+            var to = $("#date-to").val();
+            var end_url = "/@Model.Username/" + from + "/" + to;
+            toRefresh = "#refresh-date";
+            kendoUpdate(end_url);
+        });
 
+        var toRefresh = "@if (filter) { @Html.Raw("#refresh-date") } else { @Html.Raw("#refresh-hours") }";
+        $(toRefresh).click();
+
+        function kendoUpdate(end_url, base_url = "@Url.Content("~/api/")") {
             $.getJSON(base_url + "heartbeat" + end_url, function (heartbeat) {
                 $.getJSON(base_url + "step" + end_url, function (steps) {
                     $.getJSON(base_url + "sleep" + end_url, function (sleep) {
@@ -101,8 +184,124 @@ else
                         if (Object.keys(heartbeat).length == 0
                             && Object.keys(steps).length == 0
                             && Object.keys(sleep).length == 0)
-                            $("#chart-data").html("Nessun dato");
-                        else
+                            $("#chart-data").html("<h3 class='text-center text-red'>Nessun Dato</h3>");
+                        else {
+                            $("#chart-data").html("");
+                            if (sleepArr.length == 0)
+                                sleepArr.push({ "time": heartbeat[0].time, "value": false });
+
+                            var minDate = Math.min(
+                                new Date(heartbeat[0].time).getTime(),
+                                new Date(steps[0].time).getTime(),
+                                new Date(sleepArr[0].time).getTime()
+                            );
+
+                            var maxDate = Math.max(
+                                new Date(heartbeat[heartbeat.length-1].time).getTime(),
+                                new Date(steps[steps.length - 1].time).getTime(),
+                                new Date(sleepArr[sleepArr.length -1].time).getTime()
+                            );
+
+
+                            var allData = [];
+                            for (var delta = 60 * 60 * 1000; minDate < maxDate; minDate += delta) {
+                                var heartVal = NaN;
+                                for (var i = 0; i < heartbeat.length; i++) {
+                                    var time = new Date(heartbeat[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        heartVal = heartbeat[i].value;
+                                        i = heartbeat.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = heartbeat.length;
+                                }
+
+                                var stepVal = NaN;
+                                for (var i = 0; i < steps.length; i++) {
+                                    var time = new Date(steps[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        stepVal = steps[i].value;
+                                        i = steps.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = steps.length;
+                                }
+
+                                var sleepVal = false;
+                                for (var i = 0; i < sleepArr.length; i++) {
+                                    var time = new Date(sleepArr[i].time).getTime();
+                                    if (time >= minDate && time <= minDate + delta) {
+                                        sleepVal = true;
+                                        i = sleepArr.length;
+                                    }
+                                    if (time > minDate + delta)
+                                        i = sleepArr.length;
+                                }
+
+                                allData.push({
+                                    "Time": new Date(minDate),
+                                    "Heartbeat": heartVal,
+                                    "Steps": stepVal,
+                                    "Sleep": sleepVal
+                                });
+                            }
+                            if (document.getElementById("show-table").checked) {
+                                var dati = "Dati di @Model.Name @Model.LastName"
+                                $("#chart-data").kendoGrid({
+                                    toolbar: ["excel"],
+                                    excel: {
+                                        fileName: dati,
+                                        filterable: false,
+                                        columns: [{ autowidth: true}]
+                                    },
+                                    dataSource: {
+                                        data: allData,
+                                        serverPaging: false,
+                                        serverSorting: false,
+                                        batch: false,
+                                        schema: {
+                                            model: {
+                                                fields: {
+                                                    time: { type: "date" },
+                                                    Heartbeat: { type: "number" },
+                                                    Steps: {type: "number"},
+                                                    Sleep: {type: "bool"}
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scrollable: true,
+                                    sortable: true,
+                                    filterable: true,
+                                    editable: false,
+                                    columns: [
+                                        {
+                                            field: "Time",
+                                            title: "Date/Time",
+                                            format: "{0:dd/MM/yyyy HH:mm}"
+                                        },
+                                        {
+                                            field: "Heartbeat",
+                                            title: "Battiti"
+                                        },
+                                        {
+                                            field: "Steps",
+                                            title: "Passi"
+                                        },
+                                        {
+                                            field: "Sleep",
+                                            title: "Sonno"
+                                        }
+                                    ],
+                                    excelExport: function (e) {
+                                        var sheet = e.workbook.sheets[0];
+                                        for (var i = 1; i < sheet.columns.length; i++) {
+                                            sheet.columns[i].width = 10;
+                                        }
+                                    }
+                                });
+                            }
+                            else
                             $("#chart-data").kendoChart({
                                 title: { text: "Visualizzazione attivita' di @Model.Name @Model.LastName" },
                                 legend: { position: "bottom" },
@@ -167,10 +366,10 @@ else
                                     min: 0
                                 }]
                             }); /* Kendo */
+                        } /* else */
                     }); /* sleep */
                 }); /* steps */
             }); /* heart */
-        }); /* click */
-        $("#refresh-hours").click();
+        }
     </script>
 }

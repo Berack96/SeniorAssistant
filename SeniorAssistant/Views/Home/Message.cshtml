@@ -4,56 +4,102 @@
 @using LinqToDB;
 
 @{
-    ViewBag.Title = "Hello Razor";
-    string username = HttpContextAccessor.HttpContext.Session.GetString("username");
+    ViewBag.Title = "Chat";
+    var session = HttpContextAccessor.HttpContext.Session;
+    var username = session.GetString("username");
     var db = dbFactory.Create();
+    var MaxMessages = 20;
     var messages = (from m in db.Messages
                     where (m.Username.Equals(Model.Username) && m.Receiver.Equals(username))
                         ||(m.Receiver.Equals(Model.Username) && m.Username.Equals(username))
                     orderby m.Time ascending
-                    select m).ToArray();
+                    select m).Take(MaxMessages).ToArray();
 }
 
 <div class="content">
-    @if (messages.Count() == 0)
-    {
-        <p class="text-red">Non hai messaggi</p>
-    }
-    else
-    {
-        <h3 class="text-bold">Messaggi con @Model.Name @Model.LastName</h3>
-
-        foreach (var message in messages)
-        {
-            if (message.Seen == default && message.Receiver.Equals(username))
-            {
-                message.Seen = DateTime.Now;
-                db.Update(message);
-            }
-            <div>
-                @if (message.Receiver.Equals(username))
-                {
-                    <div class="pull-left"></div>
-                    <div class="pull-right-container bg-light-blue">
-                        <span style="white-space: pre-line" class="">@message.Body</span>
-                        <p class="text-aqua">@message.Seen</p>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-primary direct-chat direct-chat-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Messaggi con @Model.Name @Model.LastName</h3>
+                </div>
+                <div class="box-body">
+                    <!-- Conversations are loaded here -->
+                    <div class="direct-chat-messages" style="overflow-x:hidden">
+                        @if (messages.Count() == 0)
+                        {
+                            <p class="text-red">Non hai messaggi</p>
+                        }
+                        else
+                        {
+                            foreach (var message in messages)
+                            {
+                                if (message.Seen == default && message.Receiver.Equals(username))
+                                {
+                                    message.Seen = DateTime.Now;
+                                    db.Update(message);
+                                }
+                            <div>
+                                @if (message.Receiver.Equals(username))
+                                {
+                                    <!-- Message. Default to the left -->
+                                    <div class="row">
+                                        <div class="pull-left direct-chat-msg col-md-6">
+                                            <div class="direct-chat-info clearfix">
+                                                <span class="direct-chat-name pull-left">@Model.LastName</span>
+                                                <span class="direct-chat-timestamp pull-right">@message.Time</span>
+                                            </div>
+                                            <!-- /.direct-chat-info -->
+                                            <img class="direct-chat-img" src="@Model.Avatar" alt="User image">
+                                            <div class="direct-chat-text">
+                                                @message.Body
+                                            </div>
+                                            <!-- /.direct-chat-text -->
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Message to the right -->
+                                    <div class="row">
+                                        <div class="pull-right direct-chat-msg right col-md-6">
+                                            <div class="direct-chat-info clearfix">
+                                                <span class="direct-chat-name pull-right">Tu</span>
+                                                <span class="direct-chat-timestamp pull-left">@message.Time</span>
+                                            </div>
+                                            <!-- /.direct-chat-info and text -->
+                                            <img class="direct-chat-img" src="@session.GetString("avatar")" alt="User image">
+                                            <div class="direct-chat-text">
+                                                @message.Body
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            }
+                        }
                     </div>
-                }
-                else
-                {
-                    <div class="pull-right-container bg-green-gradient">
-                        <div style="white-space: pre-line" class="">@message.Body</div>
-                        <p class="text-aqua">@message.Seen</p>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer">
+                    <div>
+                        <div class="input-group">
+                            <input type="text"id="res-message" name="message" placeholder="Scrivi un messaggio..." class="form-control">
+                            <span class="input-group-btn">
+                                <button type="submit" id="btn-send-message" class="btn btn-primary btn-flat">Spedisci</button>
+                            </span>
+                        </div>
+                        <p id="message-error" class="text-red"></p>
                     </div>
-                    <div class="pull-right"></div>
-                }
+                </div>
+                <!-- /.box-footer-->
             </div>
-        }
-    }
-    <div class="pull-right">
-        <textarea id="res-message" class="progress-text" placeholder="Scrivi qui per scrivere un messaggio"></textarea>
-        <button id="btn-send-message">Invia</button>
-        <p id="message-error" class="text-red"></p>
+            <!--/.direct-chat -->
+        </div>
+    </div>
+    
+    <div class="pull-right col-md-4">
+        
     </div>
     <script>
         $("#btn-send-message").on("click", function () {

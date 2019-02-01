@@ -5,6 +5,7 @@ using SeniorAssistant.Models.Users;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
+using SeniorAssistant.Models;
 
 namespace SeniorAssistant.Controllers
 {
@@ -37,8 +38,8 @@ namespace SeniorAssistant.Controllers
         {
             return HttpContext.Session.GetString(Username) != null;
         }
-        
-        protected async Task<ActionResult> LoggedAction(Func<ActionResult> success)
+
+        protected async Task<IActionResult> LoggedAction(Func<IActionResult> success)
         {
             try
             {
@@ -56,16 +57,12 @@ namespace SeniorAssistant.Controllers
                 return Json(new JsonResponse()
                 {
                     Success = false,
-                    Message = ExceptionSer + Environment.NewLine +
-                              e.Message + Environment.NewLine +
-                              e.StackTrace + Environment.NewLine +
-                              e.TargetSite + Environment.NewLine +
-                              e.InnerException
+                    Message = e.Message
                 });
             }
         }
 
-        protected async Task<ActionResult> LoggedAccessDataOf(string username, bool patients, Func<ActionResult> success)
+        protected async Task<IActionResult> LoggedAccessDataOf(string username, bool patients, Func<IActionResult> success)
         {
             return await LoggedAction(() =>
             {

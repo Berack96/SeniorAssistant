@@ -1,0 +1,137 @@
+﻿<div class="col-md-4"></div>
+<div class="col-md-4">
+    <!-- Register Form -->
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Registrazione</h3>
+        </div>
+        <!-- form start -->
+        <div class="form-horizontal">
+            <div class="box-body">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Username</label>
+
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="regUsername" placeholder="Username" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="regName" placeholder="Name" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Last name</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" id="regLastname" placeholder="Lastname" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Password</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="password" id="regPassword" placeholder="Password" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Conferma password</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="password" id="regPassword2" placeholder="Password" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">E-mail</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="email" id="regEmail" placeholder="Email" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Sei un dottore?</label>
+                    <div class="col-sm-8">
+                        <input type="checkbox" id="check" />
+                        <input class="form-control hide" type="text" id="regDoctor" placeholder="(543210)" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Domanda di sicurezza</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" id="passwQues" placeholder="Domanda di sicurezza" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">Risposta di sicurezza</label>
+                    <div class="col-sm-8">
+                        <input class="form-control" type="text" id="passwAnsw" placeholder="Risposta di sicurezza" required />
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer">
+                <button class="btn btn-info pull-right" id="register-btn">Register</button>
+                <a href="/Login" type="button" class="btn btn-info">Torna al login</a>
+                <p id="msg-reg" class="login-box-msg text-red"></p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-4"></div>
+
+
+<script>
+    $("#check").on("click", function () {
+        $("#regDoctor").addClass("hide");
+        $("#check").removeClass("hide");
+    });
+
+    $("#register-btn").on("click", function () {
+        var username = $("#regUsername").val();
+        var name = $("#regName").val();
+        var lastname = $("#regLastname").val();
+        var password = $("#regPassword").val();
+        var password2 = $("#regPassword2").val();
+        var email = $("#regEmail").val();
+        var code = $("#regDoctor").val();
+
+        var quest = $("#passwQues").val();
+        var answ = $("#passwAnsw").val();
+
+        if (password != password2) {
+            $("#msg-reg").html("[Le password non coincidono]").show();
+            return false;
+        }
+
+        $.ajax({
+            url: "/Account/_register",
+            data: {
+                Code: code,
+                User: {
+                    Username: username,
+                    Name: name,
+                    Lastname: lastname,
+                    Password: password,
+                    Email: email
+                },
+                Forgot: {
+                    Question: quest,
+                    Answer: answ
+                }
+            },
+            dataType: "json",
+            type: "POST",
+            success: function (data) {
+                var msg = $("#msg-reg");
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    msg.html(data.message).show();
+                }
+            }
+        })
+    });
+</script>
