@@ -106,15 +106,15 @@ namespace IdentityDemo.Controllers
         {
             return await LoggedAccessDataOf(user.Username, false, () => {
                 var usr = Db.Users.Where(u => u.Username.Equals(user.Username)).FirstOrDefault();
-                if (user.Password.Equals(""))
+                if (user.Password == null)
                     user.Password = usr.Password;
-                if (user.Avatar.Equals(""))
+                if (user.Avatar == null)
                     user.Avatar = usr.Avatar;
-                if (user.Email.Equals(""))
+                if (user.Email == null)
                     user.Email = usr.Email;
-                if (user.LastName.Equals(""))
+                if (user.LastName == null)
                     user.LastName = usr.LastName;
-                if (user.Name.Equals(""))
+                if (user.Name == null)
                     user.Name = usr.Name;
                 
                 Db.UpdateAsync(user);
@@ -122,10 +122,12 @@ namespace IdentityDemo.Controllers
                 var doc = Db.Doctors.Where(d => d.Username.Equals(user.Username)).FirstOrDefault();
                 if(doc!=null)
                 {
-                    if (!doctor.PhoneNumber.Equals(""))
+                    if (doctor.PhoneNumber != null)
                         doc.PhoneNumber = doctor.PhoneNumber;
-                    if (!doctor.Schedule.Equals(""))
+                    if (doctor.Schedule != null)
                         doc.Schedule = doctor.Schedule;
+                    if (doctor.Location != null)
+                        doc.Location = doctor.Location;
 
                     Db.UpdateAsync(doc);
                 }

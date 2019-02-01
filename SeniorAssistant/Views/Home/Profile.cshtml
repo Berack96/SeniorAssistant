@@ -39,14 +39,21 @@
                         {
                             <div class="form-group">
                                 <div class="col-sm-10">
-                                    <input class="form-control mod-data hide" type="number" value="@Model.Doc.PhoneNumber" id="mod-phone" />
+                                    <input class="form-control mod-data hide" type="number" value="@Model.Doc.PhoneNumber" id="mod-phone" placeholder="Numero telefono" />
                                     <input class="form-control old-data" disabled type="number" value="@Model.Doc.PhoneNumber" /><br />
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <div class="col-sm-10">
-                                    <input class="form-control mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" />
+                                    <input class="form-control mod-data hide" type="text" value="@Model.Doc.Location" id="mod-location" placeholder="Luogo" />
+                                    <input class="form-control old-data" disabled type="text" value="@Model.Doc.Location" /><br />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input class="form-control mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" placeholder="Orari" />
                                     <input class="form-control old-data" disabled type="text" value="@Model.Doc.Schedule" /><br />
                                 </div>
                             </div>
@@ -269,6 +276,8 @@
         var email = $("#mod-email").val();
         var schedule = $("#mod-schedule").val();
         var phone = $("#mod-phone").val();
+        var location = $("#mod-location").val();
+
         if (password != password2) {
             $("#msg-reg").html("[Le password non coincidono]").show();
             return false;
@@ -286,7 +295,8 @@
                 },
                 Doctor: {
                     Schedule: schedule,
-                    PhoneNumber: phone
+                    PhoneNumber: phone,
+                    Location: location
                 }
             },
             dataType: "json",
