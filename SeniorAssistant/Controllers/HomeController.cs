@@ -86,16 +86,22 @@ namespace SeniorAssistant.Controllers
         [Route("Forgot")]
         public IActionResult Forgot(string username = "")
         {
+            if (IsLogged())
+            {
+                return RedirectToAction("Profile", "Home", GetUser(HttpContext.Session.GetString(Username)));
+            }
+
             var forgot = Db.Forgot.Where(f => f.Username.Equals(username)).FirstOrDefault();
-            return CheckUnAuthorized("Forgot", forgot);
+            if (forgot == null)
+                return View("Login", "Utente non esiste");
+            return View("Forgot", forgot);
         }
         
         protected IActionResult CheckAuthorized(string view, object model = null)
         {
             if (!IsLogged())
             {
-                view = "Login";
-                model = "/" + view;
+                return RedirectToAction("Login", "Home", "/" + view);
             }
             return View(view, model);
         }
@@ -104,8 +110,7 @@ namespace SeniorAssistant.Controllers
         {
             if (IsLogged())
             {
-                view = "Profile";
-                model = GetUser(HttpContext.Session.GetString(Username));
+                return RedirectToAction("Profile", "Home", GetUser(HttpContext.Session.GetString(Username)));
             }
             return View(view, model);
         }

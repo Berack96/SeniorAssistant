@@ -1,0 +1,39 @@
+.business-hours {
+	padding: 40px 14px;
+	margin-top: -15px;
+	position: relative;
+}
+
+.business-hours:before {
+	content: '';
+	width: 23px;
+	height: 23px;
+	background: #111;
+	position: absolute;
+	top: 5px;
+	left: -12px;
+	transform: rotate(-45deg);
+	z-index: -1;
+}
+
+.business-hours .title {
+	font-size: 20px;
+	color: #BBB;
+	text-transform: uppercase;
+	padding-left: 5px;
+	border-left: 4px solid #ffac0c;
+}
+
+.business-hours li {
+	color: #888;
+	line-height: 30px;
+	border-bottom: 1px solid #333;
+}
+
+	.business-hours li:last-child {
+		border-bottom: none;
+	}
+
+.business-hours .opening-hours li.today {
+	color: #ffac0c;
+}

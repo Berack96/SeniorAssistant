@@ -263,3 +263,5 @@ __pycache__/
 SeniorAssistant/SeniorAssistant/wwwroot/*
 /SeniorAssistant/Controllers/TestController.cs
 /SeniorAssistant/Views/Test/*
+/SeniorAssistant/Views/Home/Calendar.cshtml
+/SeniorAssistant/Views/Home/Calendar.cshtml.cs

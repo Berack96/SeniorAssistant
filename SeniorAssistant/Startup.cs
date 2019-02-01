@@ -149,11 +149,11 @@ namespace SeniorAssistant
                 List<Doctor> docs = db.Doctors.ToListAsync().Result;
                 if (docs.Count == 0)
                 {
-                    users.Add(new User { Name = "Alfredo", LastName = "Parise", Email = "alfred.pary@libero.it", Username = "alfredigno", Password = "alfy" });
-                    users.Add(new User { Name = "Edoardo", LastName = "Marzio", Email = "edo.marzio@libero.it", Username = "marzietto", Password = "edo64" });
+                    users.Add(new User { Name = "Alfredo", LastName = "Parise", Email = "alfred.pary@libero.it", Username = "alfredigno", Password = "alfy", Avatar = "/uploads/default.jpg" });
+                    users.Add(new User { Name = "Edoardo", LastName = "Marzio", Email = "edo.marzio@libero.it", Username = "marzietto", Password = "edo64", Avatar = "/uploads/default.jpg" });
 
-                    docs.Add(new Doctor { Username = "alfredigno", Location = "Brasile" });
-                    docs.Add(new Doctor { Username = "marzietto", Location = "Uganda" });
+                    docs.Add(new Doctor { Username = "alfredigno", Location = "Brasile", PhoneNumber = "+0 123456789" });
+                    docs.Add(new Doctor { Username = "marzietto", Location = "Uganda", PhoneNumber = "+9 87654321" });
 
                     foreach (var doc in docs)
                         db.InsertOrReplace(doc);
@@ -169,7 +169,7 @@ namespace SeniorAssistant
                     for (count=0; count<names.Length; count++)
                     {
                         var username = baseUsername + count;
-                        users.Add(new User { Name = names[count], LastName = lastnames[count], Username = username, Password = username, Email = username + "@email.st" });
+                        users.Add(new User { Name = names[count], LastName = lastnames[count], Username = username, Password = username, Email = username + "@email.st", Avatar = "/uploads/default.jpg" });
                         patients.Add(new Patient { Username = username, Doctor = docs[rnd.Next(docs.Count)].Username });
                     }
                     

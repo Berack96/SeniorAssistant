@@ -2,132 +2,321 @@
 @inject IDataContextFactory<SeniorDataContext> dbFactory
 @model User
 
-<div class="content">
-    <div class="pull-left" , style="width: 50%">
-        <h2 class="alert-success" style="text-align:center">
-            Welcome @Model.Name @Model.LastName
-        </h2>
-        name: @Model.Name<br />
-        lastname: @Model.LastName<br />
-        email: @Model.Email<br />
-    </div>
+<section class="content">
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-4">
+            <div class="box box-info bg-gray-light" style="border-top-color: darkgray">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Dati utente</h3>
+                </div>
+                <!-- /.box-header -->
+                <!-- form start -->
+                <section class="form-horizontal">
+                    <div class="box-body">
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input class="mod-data hide" type="text" value="@Model.Name" id="mod-name" />
+                                <input class="old-data" disabled type="text" value="@Model.Name" /><br />
+                            </div>
+                        </div>
 
-    <div class="box pull-right" , style="width: 45%">
-        @if (Model.IsPatient()) // is patient and has doc, must show doc data
-        {
-            var db = dbFactory.Create();
-            var doctor = (from u in db.Users
-                          join d in db.Doctors on u.Username equals d.Username
-                          where d.Username.Equals(Model.Pat.Doctor)
-                          select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input class="mod-data hide" type="text" value="@Model.LastName" id="mod-last" />
+                                <input class="old-data" disabled type="text" value="@Model.LastName" /><br />
+                            </div>
+                        </div>
 
-            <p class="text-bold">Dottore: @doctor.Name @doctor.LastName</p>
-            <p class="text-fuchsia">Dove mi puoi trovare? @doctor.Location</p>
-            <textarea class="progress-text" placeholder="Nessuna nuova nota" readonly>@Model.Pat.Notes</textarea>
-            
-            <a class="" href="/Message/@doctor.Username">Invia un messaggio al tuo dottore</a>
-        }
-        else
-        {
-            var db = dbFactory.Create();
-            dynamic[] data;
-            Type type = null;
-            string title = null;
-            var docData = db.Doctors.Where(d => d.Username.Equals(Model.Username)).ToArray().FirstOrDefault();
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input class="mod-data hide" type="email" value="@Model.Email" id="mod-email" />
+                                <input class="old-data" disabled type="email" value="@Model.Email" /><br />
+                            </div>
+                        </div>
 
-            if (docData != null) // is DOC
+                        @if (Model.IsDoctor())
+                        {
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input class="mod-data hide" type="text" value="@Model.Doc.PhoneNumber" id="mod-phone" />
+                                    <input class="old-data" disabled type="text" value="@Model.Doc.PhoneNumber" /><br />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input class="mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" />
+                                    <input class="old-data" disabled type="number" value="@Model.Doc.Schedule" /><br />
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="text" value="@Model.Username" disabled /><br />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input class="mod-data hide" type="password" id="mod-pass1" placeholder="Nuova password" /><br />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input class="mod-data hide" type="password" id="mod-pass2" placeholder="Conferma password" /><br />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <div id="image-uploader" style="display:none">
+                                    <form method="post" enctype="multipart/form-data">
+                                        <span>Cambia immagine profilo</span>
+                                        <input type="file" name="files" id="files" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="box-footer">
+                    <p id="msg">Lasciare i campi vuoti per non modificare</p>
+
+                    <input type="button" class="btn btn-default" value="Premere per modificare" id="btn-mod" />
+                    <input class="btn btn-info pull-right" type="button" id="update-user" value="Aggiorna" style="display: none" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            @if (Model.IsPatient()) // is patient and has doc, must show doc data
             {
-                // see all the patient of the doc
-                title = "Lista dei pazienti";
-                var patients = (from u in db.Users
-                                join p in db.Patients on u.Username equals p.Username
-                                where p.Doctor.Equals(docData.Username)
-                                select new { u.Username, u.Name, u.LastName, p.Notes, Profile = "<a href=\\\"/user/" + u.Username + "\\\">Profile</a>" }).ToArray();
-                data = patients;
-                type = patients.FirstOrDefault()?.GetType();
+                var db = dbFactory.Create();
+                var doctor = (from u in db.Users
+                              join d in db.Doctors on u.Username equals d.Username
+                              where d.Username.Equals(Model.Pat.Doctor)
+                              select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
+
+                <div class="box box-warning">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Contatti con il dottore: <strong>@doctor.Name @doctor.LastName</strong></h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div role="form">
+                            <div class="form-group">
+                                <h5 class="box-comment">Indirizzo dello studio: <strong>@doctor.Location</strong></h5>
+                            </div>
+
+                            <div class="form-group">
+                                <h5>Recapito telefonico: <strong>+0 00000000 <!--doctor.PhoneNumber --></strong></h5>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="input-group-btn input-group-sm">
+                                    <a href="#" id="show-schedule" class="btn btn-default">Mostra orari visite</a>
+                                </div>
+                            </div>
+                            <div class="form-group hide" id="tab-schedule">
+                                <div class="business-hours">
+                                    <h2 class="title">Orari visite</h2>
+                                    <ul class="list-unstyled opening-hours">
+                                        <li>Sunday <span class="pull-right">Closed</span></li>
+                                        <li>Monday <span class="pull-right">9:00-22:00</span></li>
+                                        <li>Tuesday <span class="pull-right">9:00-22:00</span></li>
+                                        <li>Wednesday <span class="pull-right">9:00-22:00</span></li>
+                                        <li>Thursday <span class="pull-right">9:00-22:00</span></li>
+                                        <li>Friday <span class="pull-right">9:00-23:30</span></li>
+                                        <li>Saturday <span class="pull-right">14:00-23:30</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Note da parte del dottore:</label>
+                                <p class="form-control" placeholder="Nessuna nuova nota" style="height:50px">@Model.Pat.Notes</p>
+                                <div class="input-group-btn input-group-sm">
+                                    <a href="/Message/@doctor.Username" class="btn btn-flat btn-info">Scrivi un messaggio</a>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+              </div>
             }
-            else // is a patient and need to choose a doctor
+            else
             {
-                // choose which doc you want
-                title = "Scegli un Doc";
-                var docs = (from u in db.Users
-                            join d in db.Doctors on u.Username equals d.Username
-                            select new { u.Username, u.Name, u.LastName, d.Location, Choose = "<a id=\\\"choose-" + u.Username + "\\\" href=#>Scegli</a>" }).ToArray();
-                data = docs;
-                type = docs.FirstOrDefault().GetType();
-            }
+                var db = dbFactory.Create();
+                dynamic[] data;
+                Type type = null;
+                string title = null;
+                var docData = db.Doctors.Where(d => d.Username.Equals(Model.Username)).ToArray().FirstOrDefault();
 
-            if (type != null)
-            {
-
-                var fields = new List<string>();
-
-                foreach (var field in type.GetProperties())
+                if (docData != null) // is DOC
                 {
-                    fields.Add(field.Name);
+                    // see all the patient of the doc
+                    title = "Lista dei pazienti";
+                    var patients = (from u in db.Users
+                                    join p in db.Patients on u.Username equals p.Username
+                                    where p.Doctor.Equals(docData.Username)
+                                    select new { u.Username, u.Name, u.LastName, p.Notes, Profile = "<a href=\\\"/user/" + u.Username + "\\\">Visita profilo</a>" }).ToArray();
+                    data = patients;
+                    type = patients.FirstOrDefault()?.GetType();
+                }
+                else // is a patient and need to choose a doctor
+                {
+                    // choose which doc you want
+                    title = "Scegli un Doc";
+                    var docs = (from u in db.Users
+                                join d in db.Doctors on u.Username equals d.Username
+                                select new { u.Username, u.Name, u.LastName, d.Location, Choose = "<a id=\\\"choose-" + u.Username + "\\\" href=#>Scegli</a>" }).ToArray();
+                    data = docs;
+                    type = docs.FirstOrDefault().GetType();
                 }
 
-                <p>@title</p>
-                <div id="var-table"></div>
-                <script>
-                var datas = [
-                    @foreach (var el in data)
-                    {
-                        @:{
-                        @foreach (var field in fields)
-                        {
-                            @field@:: "@Html.Raw(type.GetProperty(field).GetValue(el, null))",
-                        }
-                        @:},
-                    }
-                ];
+                if (type != null)
+                {
 
-                $(document).ready(function () {
-                    $("#var-table").kendoGrid({
-                        dataSource: {
-                            data: datas,
-                            schema: {
-                                model: {
-                                    fields: {
-                                        @foreach (var field in fields)
-                                        {
-                                            @field@: : { type: "@field.GetType().Name" },
+                    var fields = new List<string>();
+
+                    foreach (var field in type.GetProperties())
+                    {
+                        fields.Add(field.Name);
+                    }
+
+                    <p>@title</p>
+                    <div id="var-table"></div>
+                    <script>
+                    var datas = [
+                        @foreach (var el in data)
+                        {
+                            @:{
+                            @foreach (var field in fields)
+                            {
+                                @field@:: "@Html.Raw(type.GetProperty(field).GetValue(el, null))",
+                            }
+                            @:},
+                        }
+                    ];
+
+                    $(document).ready(function () {
+                        $("#var-table").kendoGrid({
+                            dataSource: {
+                                data: datas,
+                                schema: {
+                                    model: {
+                                        fields: {
+                                            @foreach (var field in fields)
+                                            {
+                                                @field@: : { type: "@field.GetType().Name" },
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                        scrollable: true,
-                        sortable: true,
-                        filterable: true,
-                        columns: [
-                            @foreach (var field in fields)
-                            {
-                                @:{ field: "@field", title: "@field", template: "#=@field#" },
-                            }
-                        ]
-                    });
-                    @if(docData == null) // choose a doc
-                    {
-                        <text>
-                        $('[id^="choose-"]').on("click", function () {
-                            var id = this.id.replace("choose-", '');
-                            $.ajax({
-                                type: "POST",
-                                url: "/Account/_addDoc",
-                                data: { doctor: id },
-                                success: function (data) {
-                                    if (data.success) {
-                                        window.location.reload();
-                                    }
+                            },
+                            scrollable: true,
+                            sortable: true,
+                            filterable: true,
+                            columns: [
+                                @foreach (var field in fields)
+                                {
+                                    @:{ field: "@field", title: "@field", template: "#=@field#" },
                                 }
+                            ]
+                        });
+                        @if (docData == null) // choose a doc
+                        {
+                            <text>
+                            $('[id^="choose-"]').on("click", function () {
+                                var id = this.id.replace("choose-", '');
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/Account/_addDoc",
+                                    data: { doctor: id },
+                                    success: function (data) {
+                                        if (data.success) {
+                                            window.location.reload();
+                                        }
+                                    }
+                                })
                             })
-                        })
-                        </text>
-                    }
-                });
-                </script>
+                            </text>
+                        }
+                    });
+                    </script>
+                }
             }
-        }
+        </div>
     </div>
-</div>
+</section>
+
+<script>
+    $(document).ready(function () {
+        $(".opening-hours li").eq(new Date().getDay()).addClass("today");
+    });
+
+    $("#show-schedule").on("click", function () {
+        $("#tab-schedule").toggleClass("hide");
+    });
+    $("#files").kendoUpload({
+        async: {
+            saveUrl: "/Account/_save",
+            autoUpload: true
+        },
+        success: function (data) {
+            if (data.response.success)
+                window.location.reload();
+            else
+                console.log(data.response.message);
+        }
+    });
+
+    $("#btn-mod").on("click", function () {
+        $(".mod-data").toggleClass("hide");
+        $(".old-data").toggleClass("hide");
+
+        $("#image-uploader").toggle();
+        $("#update-user").toggle();
+    });
+
+    $("#update-user").on("click", function () {
+        var name = $("#mod-name").val();
+        var lastname = $("#mod-last").val();
+        var password = $("#mod-pass1").val();
+        var password2 = $("#mod-pass2").val();
+        var email = $("#mod-email").val();
+        var schedule = $("#mod-schedule").val();
+        var phone = $("#mod-phone").val();
+        if (password != password2) {
+            $("#msg-reg").html("[Le password non coincidono]").show();
+            return false;
+        }
+
+        $.ajax({
+            url: "/Account/_modify",
+            data: {
+                User: {
+                    Username: "@Model.Username",
+                    Name: name,
+                    Lastname: lastname,
+                    Password: password,
+                    Email: email,
+                    Schedule: schedule,
+                    PhoneNumber: phone
+                }
+            },
+            dataType: "json",
+            type: "POST",
+            success: function (data) {
+                var msg = $("#msg-reg");
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    msg.html(data.message).show();
+                }
+            }
+        })
+    });
+</script>

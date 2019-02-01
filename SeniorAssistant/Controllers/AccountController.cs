@@ -94,12 +94,12 @@ namespace IdentityDemo.Controllers
                 };
                 return await _login(user.Username, user.Password);
             }
-            catch
+            catch (Exception e)
             {
                 return Json(new JsonResponse()
                 {
                     Success = false,
-                    Message = UsernameDupl
+                    Message = e.Message
                 });
             }
         }

@@ -12,9 +12,14 @@
     if (username != null)
     {
         var isDoc = session.GetString("role").Equals("doctor");
+        var isPatient = session.GetString("role").Equals("patient");
         var Menu = new List<IMenuItem>();
         Menu.Add(new MenuItem("Profilo", "/"));
-        Menu.Add(new MenuItem("Dati personali", "/user/" + username));
+
+        if(isPatient)
+        {
+            Menu.Add(new MenuItem("Dati personali", "/user/" + username));
+        }
 
         <aside class="main-sidebar">
             <!-- sidebar: style can be found in sidebar.less -->

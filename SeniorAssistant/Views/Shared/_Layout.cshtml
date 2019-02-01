@@ -22,12 +22,24 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <title>SeniorAssistant @ViewBag.Title</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+
     <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/fullcalendar/dist/fullcalendar.min.css">
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/fullcalendar/dist/fullcalendar.print.min.css" media="print">
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/bootstrap-daterangepicker/daterangepicker.css">
+    <!-- bootstrap datepicker -->
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+    <!-- iCheck for checkboxes and radio inputs -->
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/plugins/iCheck/all.css">
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/plugins/timepicker/bootstrap-timepicker.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/font-awesome/css/font-awesome.min.css">
     <!-- Ionicons -->
     <link rel="stylesheet" href="~/AdminLTE-2.4.3/bower_components/Ionicons/css/ionicons.min.css">
     <!-- Theme style -->
+    <link rel="stylesheet" href="~/AdminLTE-2.4.3/plugins/business.css"/>
     <link rel="stylesheet" href="~/AdminLTE-2.4.3/dist/css/AdminLTE.min.css">
     <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
           page. However, you can choose any other skin. Make sure you
@@ -47,6 +59,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     <script src="~/kendo/@(kendo.Version)/js/jquery.min.js"></script>
     <script src="~/kendo/@(kendo.Version)/js/kendo.all.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/moment/moment.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/fastclick/lib/fastclick.js"></script>
+    <script src="~/AdminLTE-2.4.3/bower_components/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/plugins/timepicker/bootstrap-timepicker.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/plugins/jQueryUI/jquery-ui.js"></script>
+    <script src="~/AdminLTE-2.4.3/plugins/jQueryUI/jquery-ui.min.js"></script>
+    <script src="~/AdminLTE-2.4.3/plugins/iCheck/icheck.min.js"></script>
 </head>
 
 <body class="hold-transition @(theme.Skin.GetDescription()) @(!logged?theme.Layout.GetDescription():"")">
@@ -58,7 +80,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <!-- mini logo for sidebar mini 50x50 pixels -->
                 <span class="logo-mini">@ViewBag.LogoMini</span>
                 <!-- logo for regular state and mobile devices -->
-                <span class="logo-lg">@ViewBag.Logo</span>
+                <span class="logo-lg">
+                    <img src="~/logo-lg.png" width="50" height="50" /> <b>S</b>enior<b>A</b>ssistant
+                </span>
             </a>
             <!-- Header Navbar -->
             <nav class="navbar navbar-static-top" role="navigation">
@@ -66,9 +90,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 @if (logged)
                 {
                     <text>
-                    <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
-                        <span class="sr-only">Toggle navigation</span>
-                    </a>
+                        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+                            <span class="sr-only">Toggle navigation</span>
+                        </a>
                     </text>
                 }
                 <!-- Navbar Right Menu -->
@@ -106,6 +130,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- REQUIRED JS SCRIPTS -->
     <!-- jQuery 3 -->
     @*<script src="~/AdminLTE-2.4.3/bower_components/jquery/dist/jquery.min.js"></script>*@
+
     <!-- Bootstrap 3.3.7 -->
     <script src="~/AdminLTE-2.4.3/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- AdminLTE App -->

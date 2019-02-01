@@ -1,11 +1,30 @@
 ﻿@model Forgot
 
-<p>Se indovini la risposta allora verrai loggato. Li poi potrai modificare la password.</p>
-<label>Domanda di sicurezza: </label><p>@Model.Question</p>
-<label>Risposta: </label><input id="answer" type="text" placeholder="Risposta"/>
-<p id="error"></p>
-<button id="send-answ">Invia</button>
+<div class="col-md-4"></div>
+<div class="col-md-4">
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Accesso tramite domanda di sicurezza</h3>
+        </div>
+        <div class="form-horizontal">
+            <div class="box-body">
+                <p>Se indovini la risposta allora verrai loggato. Li poi potrai modificare la password.</p>
+                <div>
+                    <p class="">Domanda di sicurezza: <strong>@Model.Question</strong> </p>
 
+                    <label>Risposta: </label>
+                    <input id="answer" type="text" placeholder="Risposta" />
+                    <input type="button" class="btn btn-default" id="send-answ" value="Invia" />
+                </div>
+                <p id="error" class="login-box-msg text-red"></p>
+            </div>
+            <div class="box-footer">
+                <button type="button" class="btn btn-info">@Html.ActionLink("Torna al login", "Login")</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-4"></div>
 <script>
     $("#send-answ").on("click", function () {
         var answer = $("#answer").val();

@@ -15,18 +15,6 @@
     <!-- The user image in the menu -->
     <li class="user-header">
         <img src="@session.GetString("avatar")" class="img-circle" alt="User Image" id="avatar">
-        <div>
-            <input type="button" class="btn-flat" value="+" id="btn-plus" />
-        </div>
-
-        <!--<div id="image-uploader" style="display:none">
-        <input name="files" id="files" type="file" />
-    </div>-->
-        <div id="image-uploader" style="display:none">
-            <form method="post" enctype="multipart/form-data">
-                <input type="file" name="files" id="files" />
-            </form>
-        </div>
         <p>
             @session.GetString("name") @session.GetString("lastname") - @session.GetString("role")
             <small>@session.GetString("email")</small>
@@ -44,25 +32,6 @@
 </ul>
 
 <script>
-    $(document).ready(function () {
-        $("#files").kendoUpload({
-            async: {
-                saveUrl: "/Account/_save",
-                autoUpload: true
-            },
-            success: function (data) {
-                if (data.response.success)
-                    window.location.reload();
-                else
-                    console.log(data.response.message);
-            }
-        });
-    });
-
-    $("#btn-plus").on("click", function () {
-        $("#image-uploader").toggle();
-    });
-
     $("#logout-btn").on("click", function () {
         $.ajax({
             url: "/Account/_logout",
