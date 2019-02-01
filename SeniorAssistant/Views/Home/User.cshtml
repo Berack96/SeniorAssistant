@@ -3,7 +3,7 @@
 @model User
 
 @{
-    ViewBag.Title = "Hello Razor";
+    ViewBag.Title = "Dati paziente";
     var session = HttpContextAccessor.HttpContext.Session;
     var username = session.GetString("username");
     bool filter = HttpContextAccessor.HttpContext.Request.Query["from"] != (String)null;
@@ -39,7 +39,6 @@ else
         <div class="col-md-1"></div>
 
         <div class="col-md-6">
-            <!-- Date range -->
             <div class="form-group">
                 <div class="input-group">
                     <div class="input-group-addon">
@@ -49,9 +48,7 @@ else
                     <input id="date-to" type="date" value="@HttpContextAccessor.HttpContext.Request.Query["to"]" />
                     <input type="button" id="refresh-date" class="fc-button no-border" value="Cambia data" />
                 </div>
-                <!-- /.input group -->
             </div>
-            <!-- /.form group -->
         </div>
 
         @if (isDoc)
@@ -249,7 +246,14 @@ else
                                 });
                             }
                             if (document.getElementById("show-table").checked) {
+                                var dati = "Dati di @Model.Name @Model.LastName"
                                 $("#chart-data").kendoGrid({
+                                    toolbar: ["excel"],
+                                    excel: {
+                                        fileName: dati,
+                                        filterable: false,
+                                        columns: [{ autowidth: true}]
+                                    },
                                     dataSource: {
                                         data: allData,
                                         serverPaging: false,
@@ -288,7 +292,13 @@ else
                                             field: "Sleep",
                                             title: "Sonno"
                                         }
-                                    ]
+                                    ],
+                                    excelExport: function (e) {
+                                        var sheet = e.workbook.sheets[0];
+                                        for (var i = 1; i < sheet.columns.length; i++) {
+                                            sheet.columns[i].width = 10;
+                                        }
+                                    }
                                 });
                             }
                             else

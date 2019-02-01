@@ -4,7 +4,7 @@
 @using LinqToDB;
 
 @{
-    ViewBag.Title = "Hello Razor";
+    ViewBag.Title = "Chat";
     var session = HttpContextAccessor.HttpContext.Session;
     var username = session.GetString("username");
     var db = dbFactory.Create();
@@ -67,12 +67,11 @@
                                                 <span class="direct-chat-name pull-right">Tu</span>
                                                 <span class="direct-chat-timestamp pull-left">@message.Time</span>
                                             </div>
-                                            <!-- /.direct-chat-info -->
+                                            <!-- /.direct-chat-info and text -->
                                             <img class="direct-chat-img" src="@session.GetString("avatar")" alt="User image">
                                             <div class="direct-chat-text">
                                                 @message.Body
                                             </div>
-                                            <!-- /.direct-chat-text -->
                                         </div>
                                     </div>
                                 }

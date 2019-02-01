@@ -10,8 +10,6 @@
                 <div class="box-header with-border">
                     <h3 class="box-title">Dati utente</h3>
                 </div>
-                <!-- /.box-header -->
-                <!-- form start -->
                 <section class="form-horizontal">
                     <div class="box-body">
                         <div class="form-group">
@@ -47,7 +45,7 @@
                             <div class="form-group">
                                 <div class="col-sm-10">
                                     <input class="mod-data hide" type="text" value="@Model.Doc.Schedule" id="mod-schedule" />
-                                    <input class="old-data" disabled type="number" value="@Model.Doc.Schedule" /><br />
+                                    <input class="old-data" disabled type="text" value="@Model.Doc.Schedule" /><br />
                                 </div>
                             </div>
                         }
@@ -96,13 +94,12 @@
                 var doctor = (from u in db.Users
                               join d in db.Doctors on u.Username equals d.Username
                               where d.Username.Equals(Model.Pat.Doctor)
-                              select new { u.Username, u.Name, u.LastName, d.Location }).ToArray().First();
+                              select new { u.Username, u.Name, u.LastName, d.Location, d.PhoneNumber, d.Schedule }).ToArray().First();
 
                 <div class="box box-warning">
                     <div class="box-header with-border">
                         <h3 class="box-title">Contatti con il dottore: <strong>@doctor.Name @doctor.LastName</strong></h3>
                     </div>
-                    <!-- /.box-header -->
                     <div class="box-body">
                         <div role="form">
                             <div class="form-group">
@@ -110,26 +107,12 @@
                             </div>
 
                             <div class="form-group">
-                                <h5>Recapito telefonico: <strong>+0 00000000 <!--doctor.PhoneNumber --></strong></h5>
+                                <h5>Recapito telefonico: <strong>@doctor.PhoneNumber</strong></h5>
                             </div>
 
                             <div class="form-group">
                                 <div class="input-group-btn input-group-sm">
-                                    <a href="#" id="show-schedule" class="btn btn-default">Mostra orari visite</a>
-                                </div>
-                            </div>
-                            <div class="form-group hide" id="tab-schedule">
-                                <div class="business-hours">
-                                    <h2 class="title">Orari visite</h2>
-                                    <ul class="list-unstyled opening-hours">
-                                        <li>Sunday <span class="pull-right">Closed</span></li>
-                                        <li>Monday <span class="pull-right">9:00-22:00</span></li>
-                                        <li>Tuesday <span class="pull-right">9:00-22:00</span></li>
-                                        <li>Wednesday <span class="pull-right">9:00-22:00</span></li>
-                                        <li>Thursday <span class="pull-right">9:00-22:00</span></li>
-                                        <li>Friday <span class="pull-right">9:00-23:30</span></li>
-                                        <li>Saturday <span class="pull-right">14:00-23:30</span></li>
-                                    </ul>
+                                    <h5 class="box-comment">Orario visite: <strong>@doctor.Schedule</strong></h5>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -139,11 +122,8 @@
                                     <a href="/Message/@doctor.Username" class="btn btn-flat btn-info">Scrivi un messaggio</a>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
-                    <!-- /.box-body -->
               </div>
             }
             else
@@ -256,10 +236,7 @@
     $(document).ready(function () {
         $(".opening-hours li").eq(new Date().getDay()).addClass("today");
     });
-
-    $("#show-schedule").on("click", function () {
-        $("#tab-schedule").toggleClass("hide");
-    });
+    
     $("#files").kendoUpload({
         async: {
             saveUrl: "/Account/_save",
